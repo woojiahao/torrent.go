@@ -36,5 +36,25 @@ func TestTStringParseValidFormat(t *testing.T) {
 }
 
 func TestTStringParseInvalidFormat(t *testing.T) {
+  defer func() {
+    if r := recover(); r == nil {
+      t.Errorf("the code did not panic")
+    }
+  }()
 
+  data := []bencoding.TString{
+    {"5:test", "test", 5},
+    {"7:network", "network", 8},
+    {"1:i", "", 1},
+    {"2:h", "hi", 2},
+  }
+
+  for _, d := range data {
+    result := bencoding.Parse(d.Original)
+    tString := result.(bencoding.TString)
+
+    if tString == d {
+      t.Errorf("%s should be incorrectly parsed", tString.Original)
+    }
+  }
 }
