@@ -1,3 +1,5 @@
+![.github/workflows/main.yml](https://github.com/woojiahao/torrent.go/workflows/.github/workflows/main.yml/badge.svg?branch=master)
+
 # torrent.go
 Implementation of the BitTorrent protocol in Golang
 
