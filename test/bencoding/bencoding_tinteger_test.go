@@ -28,3 +28,25 @@ func TestTIntegerParseValidFormat(t *testing.T) {
     t.Logf("string successfully converted to TInteger: %v", tInteger)
   }
 }
+
+func TestTIntegerParseInvalidFormat(t *testing.T) {
+  defer func() {
+    if r := recover(); r == nil {
+      t.Errorf("the code did not panic")
+    }
+  }()
+
+  data := []TInteger{
+    {"ide", 5},
+    {"asdfj", 8},
+  }
+
+  for _, d := range data {
+    result := Parse(d.Original)
+    tString := result.(TInteger)
+
+    if tString == d {
+      t.Errorf("%s should be incorrectly parsed", tString.Original)
+    }
+  }
+}
