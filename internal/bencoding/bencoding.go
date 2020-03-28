@@ -2,12 +2,12 @@ package bencoding
 
 import (
   "fmt"
+  "github.com/woojiahao/torrent.go/internal/utility"
   "regexp"
-  "strconv"
 )
 
 var TStringRegex = regexp.MustCompile("^(\\d+):(\\w+)$")
-var TIntegerRegex = regexp.MustCompile("^i(\\d+)e$")
+var TIntegerRegex = regexp.MustCompile("^i([-\\d]+)e$")
 var TListRegex = regexp.MustCompile("^l(.+)e$")
 var TDictionaryRegex = regexp.MustCompile("^(d.+)e$")
 
@@ -56,7 +56,7 @@ func Parse(information string) TType {
   case TStringRegex.Match(b):
     return parseTString(information)
   case TIntegerRegex.Match(b):
-    panic("not implemented")
+    return parseTInteger(information)
   case TListRegex.Match(b):
     panic("not implemented")
   case TDictionaryRegex.Match(b):
@@ -71,11 +71,7 @@ func parseTString(information string) TString {
   result := TStringRegex.FindAllStringSubmatch(information, -1)[0]
 
   data := result[2]
-  length, err := strconv.Atoi(result[1])
-
-  if err != nil {
-    panic(err)
-  }
+  length := utility.StrToInt(result[1])
 
   if length != len(data) {
     panic(fmt.Sprintf("invalid length provided; expected: %d, got: %d", len(data), length))
@@ -85,5 +81,16 @@ func parseTString(information string) TString {
     Original: information,
     Data:     data,
     Length:   length,
+  }
+}
+
+func parseTInteger(information string) TInteger {
+  result := TIntegerRegex.FindAllStringSubmatch(information, -1)[0]
+
+  data := utility.StrToInt(result[1])
+
+  return TInteger{
+    Original: information,
+    Data:     data,
   }
 }
