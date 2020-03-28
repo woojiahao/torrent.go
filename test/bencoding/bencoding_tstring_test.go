@@ -20,7 +20,7 @@ func TestTStringParseValidFormat(t *testing.T) {
       t.Errorf("%s was converted to a %T, instead of a TString", d.Original, result)
     }
 
-    if d != result {
+    if d != tString {
       t.Errorf(
         "%s was not parsed correctly; expected: %s of %d characters, got: %s of %d characters",
         d.Original,
