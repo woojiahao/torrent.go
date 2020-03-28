@@ -6,4 +6,4 @@ jobs:
     name: Execute test suites for torrent.go
     steps:
       - name: Testing step
-        uses: ./.github/actions/testing/action.yml
+        uses: ./.github/actions/testing/
