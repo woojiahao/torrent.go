@@ -1,0 +1,5 @@
+name: 'torrent.go testing'
+description: 'Run test suite for torrent.go'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
