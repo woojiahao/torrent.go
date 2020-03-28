@@ -7,7 +7,7 @@ import (
 )
 
 var TStringRegex = regexp.MustCompile("^(\\d+):(\\w+)$")
-var TIntegerRegex = regexp.MustCompile("^i(\\d+)e$")
+var TIntegerRegex = regexp.MustCompile("^i([-\\d]+)e$")
 var TListRegex = regexp.MustCompile("^l(.+)e$")
 var TDictionaryRegex = regexp.MustCompile("^(d.+)e$")
 
