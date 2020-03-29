@@ -27,10 +27,12 @@ func (t TInt) Encode() string {
   return fmt.Sprintf("i%de", value)
 }
 
+// TODO Add encoding to this
 func (t TList) Encode() string {
   return "le"
 }
 
+// TODO Add encoding to this
 func (t TDict) Encode() string {
   return "de"
 }
