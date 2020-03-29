@@ -1,15 +1,17 @@
 package bencoding
 
 import (
-  "fmt"
-  "github.com/woojiahao/torrent.go/internal/utility"
   "regexp"
 )
 
 var TStringRegex = regexp.MustCompile("^(\\d+):(\\w+)$")
 var TIntegerRegex = regexp.MustCompile("^i([-\\d]+)e$")
 var TListRegex = regexp.MustCompile("^l(.+)e$")
-var TDictionaryRegex = regexp.MustCompile("^(d.+)e$")
+var TDictionaryRegex = regexp.MustCompile("^d(.+)e$")
+
+const END = "e"
+
+// Check the README for the bencoding format patterns.
 
 // Types starting with 'T' defined as the torrent data types.
 type (
@@ -46,7 +48,7 @@ type (
   // Example: d3:onei1e3:twoi2ee
   TDictionary struct {
     Original string
-    Data     map[TType]TType
+    Data     map[string]TType
   }
 )
 
@@ -60,37 +62,8 @@ func Parse(information string) TType {
   case TListRegex.Match(b):
     panic("not implemented")
   case TDictionaryRegex.Match(b):
-    panic("not implemented")
+    return parseTDictionary(information)
   default:
     panic("invalid information format. please refer to the specification for the appropriate data type format")
-  }
-}
-
-// Parses a string into a TString
-func parseTString(information string) TString {
-  result := TStringRegex.FindAllStringSubmatch(information, -1)[0]
-
-  data := result[2]
-  length := utility.StrToInt(result[1])
-
-  if length != len(data) {
-    panic(fmt.Sprintf("invalid length provided; expected: %d, got: %d", len(data), length))
-  }
-
-  return TString{
-    Original: information,
-    Data:     data,
-    Length:   length,
-  }
-}
-
-func parseTInteger(information string) TInteger {
-  result := TIntegerRegex.FindAllStringSubmatch(information, -1)[0]
-
-  data := utility.StrToInt(result[1])
-
-  return TInteger{
-    Original: information,
-    Data:     data,
   }
 }
