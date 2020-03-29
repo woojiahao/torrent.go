@@ -66,7 +66,7 @@ func Parse(information string) TType {
   }
 }
 
-// Parses a string into a TString
+// Parses a string into a TString.
 func parseTString(information string) TString {
   result := TStringRegex.FindAllStringSubmatch(information, -1)[0]
 
@@ -84,6 +84,7 @@ func parseTString(information string) TString {
   }
 }
 
+// Parses a string into a TInteger.
 func parseTInteger(information string) TInteger {
   result := TIntegerRegex.FindAllStringSubmatch(information, -1)[0]
 
