@@ -1,4 +1,4 @@
-package bencoding
+package bencoding_dep
 
 import "github.com/woojiahao/torrent.go/internal/utility"
 

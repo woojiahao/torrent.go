@@ -1,4 +1,4 @@
-package bencoding
+package bencoding_dep
 
 // Parses string to TList.
 func decodeTList(information string) TList {

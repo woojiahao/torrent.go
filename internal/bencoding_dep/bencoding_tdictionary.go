@@ -1,4 +1,4 @@
-package bencoding
+package bencoding_dep
 
 // Parses a string into a TDictionary.
 // This is broken up as <key1><value1><key2><value2><key3><value3>.

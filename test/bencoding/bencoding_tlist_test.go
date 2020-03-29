@@ -5,6 +5,6 @@ import (
 )
 
 func TestTListDecodeValidFormat(t *testing.T) {
-  //result := bencoding.Decode("l3:onei8ed3:twoi2eee")
+  //result := bencoding_dep.Decode("l3:onei8ed3:twoi2eee")
   //fmt.Println(result)
 }
