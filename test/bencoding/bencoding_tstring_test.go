@@ -14,7 +14,7 @@ func TestTStringParseValidFormat(t *testing.T) {
   }
 
   for _, d := range data {
-    result := bencoding.Parse(d.Original)
+    result := bencoding.Decode(d.Original)
     tString, ok := result.(bencoding.TString)
     if !ok {
       t.Errorf("%s was converted to a %T, instead of a TString", d.Original, result)
@@ -50,7 +50,7 @@ func TestTStringParseInvalidFormat(t *testing.T) {
   }
 
   for _, d := range data {
-    result := bencoding.Parse(d.Original)
+    result := bencoding.Decode(d.Original)
     tString := result.(bencoding.TString)
 
     if tString == d {

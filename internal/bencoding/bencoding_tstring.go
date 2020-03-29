@@ -6,7 +6,7 @@ import (
 )
 
 // Parses a string into a TString.
-func parseTString(information string) TString {
+func decodeTString(information string) TString {
   result := TStringRegex.FindAllStringSubmatch(information, -1)[0]
 
   data := result[2]

@@ -14,7 +14,7 @@ func TestTIntegerParseValidFormat(t *testing.T) {
   }
 
   for _, d := range data {
-    result := Parse(d.Original)
+    result := Decode(d.Original)
 
     tInteger, ok := result.(TInteger)
     if !ok {
@@ -42,7 +42,7 @@ func TestTIntegerParseInvalidFormat(t *testing.T) {
   }
 
   for _, d := range data {
-    result := Parse(d.Original)
+    result := Decode(d.Original)
     tString := result.(TInteger)
 
     if tString == d {

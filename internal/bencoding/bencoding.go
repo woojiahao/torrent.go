@@ -1,7 +1,10 @@
 package bencoding
 
 import (
+  "fmt"
+  . "github.com/woojiahao/torrent.go/internal/utility"
   "regexp"
+  "strings"
 )
 
 var TStringRegex = regexp.MustCompile("^(\\d+):(\\w+)$")
@@ -52,18 +55,54 @@ type (
   }
 )
 
-func Parse(information string) TType {
+func Decode(information string) TType {
   b := []byte(information)
   switch {
   case TStringRegex.Match(b):
-    return parseTString(information)
+    return decodeTString(information)
   case TIntegerRegex.Match(b):
-    return parseTInteger(information)
+    return decodeTInteger(information)
   case TListRegex.Match(b):
-    panic("not implemented")
+    return decodeTList(information)
   case TDictionaryRegex.Match(b):
-    return parseTDictionary(information)
+    return decodeTDictionary(information)
   default:
     panic("invalid information format. please refer to the specification for the appropriate data type format")
+  }
+}
+
+func decodeConsecutive(data string, handler func(TType)) {
+  counter := 0
+
+  for counter < len(data) {
+    cur := string(data[counter])
+    jump := 0
+    var result TType
+
+    if IsDigit(cur) {
+      length := StrToInt(cur)
+      content := data[counter : counter+length+2]
+      result = decodeTString(content)
+      jump = len(content)
+    } else if IsStrInRange(cur, "l", "i", "d") {
+      jump = strings.Index(data[counter:], END) + 1
+      content := data[counter : counter+jump]
+
+      switch cur {
+      case "i":
+        result = decodeTInteger(content)
+      case "d":
+        result = decodeTDictionary(content)
+      case "l":
+        fmt.Println("parsing an list")
+      default:
+        panic("invalid character")
+      }
+    } else {
+      panic(fmt.Sprintf("invalid character %s", cur))
+    }
+
+    counter += jump
+    handler(result)
   }
 }
