@@ -9,7 +9,7 @@ import (
 var TStringRegex = regexp.MustCompile("^(\\d+):(\\w+)$")
 var TIntegerRegex = regexp.MustCompile("^i([-\\d]+)e$")
 var TListRegex = regexp.MustCompile("^l(.+)e$")
-var TDictionaryRegex = regexp.MustCompile("^(d.+)e$")
+var TDictionaryRegex = regexp.MustCompile("^d(.+)e$")
 
 // Types starting with 'T' defined as the torrent data types.
 type (
@@ -94,4 +94,8 @@ func parseTInteger(information string) TInteger {
     Original: information,
     Data:     data,
   }
+}
+
+func parseTDictionary(information string) TDictionary {
+  result := TDictionaryRegex.FindAllStringSubmatch(information, -1)[0]
 }
