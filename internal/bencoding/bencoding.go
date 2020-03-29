@@ -84,15 +84,15 @@ func decodeConsecutive(data string, handler func(TType)) {
       content := data[counter : counter+length+2]
       result = decodeTString(content)
       jump = len(content)
-    } else if IsStrInRange(cur, "l", "i", "d") {
+    } else if IsStrInRange(cur, "d", "i", "l") {
       jump = strings.Index(data[counter:], END) + 1
       content := data[counter : counter+jump]
 
       switch cur {
-      case "i":
-        result = decodeTInteger(content)
       case "d":
         result = decodeTDictionary(content)
+      case "i":
+        result = decodeTInteger(content)
       case "l":
         fmt.Println("parsing an list")
       default:
