@@ -85,6 +85,8 @@ func decodeConsecutive(data string, handler func(TType)) {
       result = decodeTString(content)
       jump = len(content)
     } else if IsStrInRange(cur, "d", "i", "l") {
+      // Only assume we can take the first e when the value is an integer
+      // If the input is a dictionary or list, the last e should be taken instead
       jump = strings.Index(data[counter:], END) + 1
       content := data[counter : counter+jump]
 
@@ -94,7 +96,7 @@ func decodeConsecutive(data string, handler func(TType)) {
       case "i":
         result = decodeTInteger(content)
       case "l":
-        fmt.Println("parsing an list")
+        result = decodeTList(content)
       default:
         panic("invalid character")
       }

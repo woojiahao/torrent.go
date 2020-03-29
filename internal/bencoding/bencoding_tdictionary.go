@@ -29,8 +29,5 @@ func decodeTDictionary(information string) TDictionary {
     },
   )
 
-  return TDictionary{
-    Original: data,
-    Data:     dict,
-  }
+  return TDictionary{data, dict}
 }

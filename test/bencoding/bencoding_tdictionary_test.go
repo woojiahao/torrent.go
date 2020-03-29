@@ -17,7 +17,16 @@ func TestTDictionaryParseValidFormat(t *testing.T) {
     Data:     "str",
     Length:   3,
   }
-  data := Decode("d3:onei1e3:str3:stre")
+  dictionary["dict"] = TDictionary{
+    Original: "d3:onei1ee",
+    Data: map[string]TType{
+      "one": TInteger{
+        Original: "i1e",
+        Data:     1,
+      },
+    },
+  }
+  data := Decode("d3:onei1e3:str3:str3:keyl3:onei8ed3:twoi2eeee")
   fmt.Println(data)
   //data := []TDictionary{
   //  {"d3:onei1ee", map[string]TType{

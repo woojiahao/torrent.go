@@ -15,3 +15,10 @@ Implementation of the BitTorrent protocol in Golang
 
 - [Wikipedia](https://en.wikipedia.org/wiki/Bencode)
 - [BitTorrent specification](https://www.bittorrent.org/beps/bep_0003.html)
+
+## TODO 
+
+- [ ] Set the valid parsing of the bencoding to use defers to catch the appropriate panics
+- [ ] Add data validation for bencoding decoding
+- [ ] Add encoding to bencoding format
+- [ ] Update test suite and any other location where "parse" is used instead of decode
