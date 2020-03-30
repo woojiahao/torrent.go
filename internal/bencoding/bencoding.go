@@ -46,15 +46,12 @@ func decode(input string) (result TType, jump int) {
   cur := string(input[0])
   if IsDigit(cur) {
     result, jump = decodeTString(input)
-    return
   } else if IsStrInRange(cur, "d", "i", "l") {
     switch cur {
     case "d":
       result, jump = decodeTDict(input)
-      return
     case "i":
       result, jump = decodeTInt(input)
-      return
     case "l":
       result, jump = decodeTList(input)
     }

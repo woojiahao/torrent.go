@@ -12,4 +12,5 @@ func main() {
   lst := bencoding.Decode("li1e3:onel3:oneed3:one3:oneee")
   fmt.Println(foo, bar)
   fmt.Println(baz, lst)
+  fmt.Println(lst)
 }
