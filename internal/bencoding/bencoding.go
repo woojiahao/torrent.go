@@ -65,8 +65,8 @@ func decode(input string) (result TType, jump int) {
 func decodeTString(input string) (result TString, jump int) {
   delimiterPos := strings.Index(input, ":")
   length := StrToInt(input[:delimiterPos])
-  result = TString(input[delimiterPos+1 : length+2])
-  jump = length + len(string(length)) + 1
+  jump = length + delimiterPos + 1
+  result = TString(input[delimiterPos+1 : jump])
   return
 }
 
