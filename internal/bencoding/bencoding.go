@@ -17,6 +17,36 @@ type (
   TDict   map[string]TType
 )
 
+func toTypeStatusCheck(ok bool, t string) {
+  if !ok {
+    panic(fmt.Sprintf("failed to convert TType to %s", t))
+  }
+}
+
+func ToString(t TType) TString {
+  tString, ok := t.(TString)
+  toTypeStatusCheck(ok, "TString")
+  return tString
+}
+
+func ToInt(t TType) TInt {
+  tInt, ok := t.(TInt)
+  toTypeStatusCheck(ok, "TInt")
+  return tInt
+}
+
+func ToList(t TType) TList {
+  tList, ok := t.(TList)
+  toTypeStatusCheck(ok, "TList")
+  return tList
+}
+
+func ToDict(t TType) TDict {
+  tDict, ok := t.(TDict)
+  toTypeStatusCheck(ok, "TDict")
+  return tDict
+}
+
 func (t TString) Encode() string {
   value := string(t)
   return fmt.Sprintf("%d:%s", len(value), value)
