@@ -12,22 +12,6 @@ type (
   torrent interface{}
 )
 
-func toMultiFileTorrent(t torrent) multiFileTorrent {
-  torrent, ok := t.(multiFileTorrent)
-  if !ok {
-    panic("cannot convert torrent to multi-file torrent")
-  }
-  return torrent
-}
-
-func toSingleFileTorrent(t torrent) singleFileTorrent {
-  torrent, ok := t.(singleFileTorrent)
-  if !ok {
-    panic("cannot convert torrent to single file torrent")
-  }
-  return torrent
-}
-
 // Single file torrent structures
 type (
   singleFileTorrent struct {
