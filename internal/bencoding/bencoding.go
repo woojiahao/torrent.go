@@ -1,41 +1,9 @@
 package bencoding
 
 import (
-  "fmt"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "strings"
 )
-
-type (
-  TType interface {
-    Encode() string
-  }
-
-  TString string
-  TInt    int
-  TList   []TType
-  TDict   map[string]TType
-)
-
-func (t TString) Encode() string {
-  value := string(t)
-  return fmt.Sprintf("%d:%s", len(value), value)
-}
-
-func (t TInt) Encode() string {
-  value := int(t)
-  return fmt.Sprintf("i%de", value)
-}
-
-// TODO Add encoding to this
-func (t TList) Encode() string {
-  return "le"
-}
-
-// TODO Add encoding to this
-func (t TDict) Encode() string {
-  return "de"
-}
 
 func Decode(input string) TType {
   result, _ := decode(input)
