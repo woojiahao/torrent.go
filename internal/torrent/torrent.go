@@ -127,7 +127,7 @@ func parseTorrentFile(torrentFileContent TDict) (torrent, bool) {
 // Downloads a torrent from the given file path
 func Download(torrentFilename string) {
 
-  if !Exists(torrentFilename) {
+  if NotExist(torrentFilename) {
     panic("file does not exist")
   } else if IsDir(torrentFilename) {
     panic("filename points to a directory")
@@ -146,7 +146,8 @@ func Download(torrentFilename string) {
     if !ok {
       panic("failed to convert to single file torrent")
     }
-    fmt.Println(torrent.info.pieceLength)
+
+    RequestTracker(torrent.announce)
   } else {
     torrent, ok := torrent.(multiFileTorrent)
     if !ok {

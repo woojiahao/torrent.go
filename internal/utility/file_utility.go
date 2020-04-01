@@ -14,8 +14,8 @@ func ReadFileContents(filename string) string {
   return string(data)
 }
 
-// Check if a given file exists
-func Exists(filename string) bool {
+// Check if a given file does not exists
+func NotExist(filename string) bool {
   _, err := os.Stat(filename)
   return os.IsNotExist(err)
 }
