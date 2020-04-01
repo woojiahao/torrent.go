@@ -1,6 +1,8 @@
 package utility
 
 import (
+  "crypto/sha1"
+  "hash"
   "math/rand"
   "strconv"
   "unicode"
@@ -57,4 +59,11 @@ func RandomChar() byte {
   default:
     panic("invalid int")
   }
+}
+
+// Generate a SHA1 Hash for a given string input
+func GenerateSHA1Hash(input string) hash.Hash {
+  h := sha1.New()
+  h.Write([]byte(input))
+  return h
 }

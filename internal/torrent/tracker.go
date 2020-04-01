@@ -1,7 +1,6 @@
 package torrent
 
 import (
-  "crypto/sha1"
   "encoding/binary"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
@@ -52,8 +51,7 @@ func generatePeerID() string {
 // The SHA1 hash generated is 40 characters long for human reading, it is in fact a hex string
 // The tracker must receive the URL-encoded version of the hex string
 func generateInfoHash(info string) string {
-  h := sha1.New()
-  h.Write([]byte(info))
+  h := GenerateSHA1Hash(info)
   return string(h.Sum(nil))
 }
 
