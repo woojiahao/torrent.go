@@ -5,14 +5,28 @@ import (
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
+  "net/http"
   "strconv"
   "strings"
 )
 
-// TODO Method for generating base ten ASCII numbers for uploaded and downloaded
-func generateBaseTenASCII(num int) int {
-  return num*10 + 2
-}
+type (
+  trackerResponse struct {
+    failureReason  string
+    warningMessage string
+    interval       int
+    minInterval    int
+    trackerId      string
+    complete       int
+    incomplete     int
+    peers          []peer
+  }
+
+  peer struct {
+    ip   string
+    port int
+  }
+)
 
 // The peer_id is a 20 character string that is randomly generated at the start of each download
 func generatePeerID() string {
@@ -44,6 +58,12 @@ func generateInfoHash(info string) string {
 // Requests information from the given tracker
 func RequestTracker(trackerURL, info string, length int) {
   infoHash := generateInfoHash(info)
+  var resp *http.Response
+  defer func() {
+    if resp != nil {
+      _ = resp.Body.Close()
+    }
+  }()
 
   for port := 6881; port <= 6889; port++ {
     parameters := QueryParameters{
@@ -56,14 +76,20 @@ func RequestTracker(trackerURL, info string, length int) {
       "compact":    "1",
     }
 
-    resp := GET(trackerURL, parameters)
-    defer resp.Body.Close()
+    resp = GET(trackerURL, parameters)
 
-    body, err := ioutil.ReadAll(resp.Body)
-    Check(err)
-
-    fmt.Println(string(body))
+    // TODO Might need to make this more dynamic for checking status code
+    if resp.StatusCode == 200 {
+      break
+    }
   }
 
-  panic("cannot connect to tracker")
+  if resp == nil {
+    panic("cannot connect to tracker; unable to get response from announce url")
+  }
+
+  body, err := ioutil.ReadAll(resp.Body)
+  Check(err)
+
+  fmt.Println(string(body))
 }
