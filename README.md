@@ -90,3 +90,4 @@ the system.
 - [ ] Update test suite and any other location where "parse" is used instead of decode
 - [ ] Retry downloading if the original torrent failed
 - [ ] Support web seeding
+- [ ] Set up event bus system for when adding CLI 

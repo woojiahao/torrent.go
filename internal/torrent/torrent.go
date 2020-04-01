@@ -1,6 +1,7 @@
 package torrent
 
 import (
+  "errors"
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
@@ -75,7 +76,11 @@ func createPieces(piecesStr string) pieces {
   const pieceSize = 20
   pieces := make([][pieceSize]byte, 0)
 
-  for i := 0; i < len(piecesStr); i += pieceSize {
+  if len(piecesStr)%pieceSize != 0 {
+    LogCheck(errors.New(fmt.Sprintf("invalid pieces format; not a multiple of %d", pieceSize)))
+  }
+
+  for i := 0; i < len(piecesStr)/pieceSize; i += pieceSize {
     byteSlice := []byte(piecesStr[i : i+pieceSize])
     var byteChunk [pieceSize]byte
     copy(byteChunk[:], byteSlice[:pieceSize])
@@ -148,11 +153,11 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
 func Download(torrentFilename string) {
 
   if NotExist(torrentFilename) {
-    panic("file does not exist")
+    LogCheck(&fileError{torrentFilename, "does not exist"})
   } else if IsDir(torrentFilename) {
-    panic("filename points to a directory")
+    LogCheck(&fileError{torrentFilename, "points to a directory"})
   } else if !IsFileType(torrentFilename, "torrent") {
-    panic("given filename must be a torrent file")
+    LogCheck(&fileError{torrentFilename, "is not a .torrent file"})
   }
 
   fileContents := ReadFileContents(torrentFilename)
@@ -164,5 +169,6 @@ func Download(torrentFilename string) {
   info := torrentMetadata["info"].Encode()
 
   trackerResponse := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
-  fmt.Println(trackerResponse)
+
+  download(trackerResponse)
 }
