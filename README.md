@@ -64,6 +64,7 @@ Implementation of the BitTorrent protocol in Golang
 - [Understanding the BitTorrent specification](http://dandylife.net/docs/BitTorrent-Protocol.pdf)
 - [Implementing BitTorrent using AsyncIO in Python](https://youtu.be/Pe3b9bdRtiE)
 - [Torrent files](https://en.wikipedia.org/wiki/Torrent_file)
+- [Specification](https://wiki.theory.org/index.php/BitTorrentSpecification)
 
 ### Bencoding format
 
@@ -73,6 +74,7 @@ Implementation of the BitTorrent protocol in Golang
 ### Sample torrents
 
 - [WebTorrent free torrents](https://webtorrent.io/free-torrents)
+- [Internet archive](https://archive.org/)
 
 ## TODO 
 

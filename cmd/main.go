@@ -21,5 +21,5 @@ func torrentDownload(filename string) {
 }
 
 func main() {
-  torrentDownload("sintel")
+  torrentDownload("alice-in-wonderland")
 }
