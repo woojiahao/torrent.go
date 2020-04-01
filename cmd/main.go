@@ -16,7 +16,12 @@ func bencodingTest() {
   fmt.Println(lst)
 }
 
+func torrentDownload(filename string) {
+  torrent.Download(fmt.Sprintf("./assets/test-torrents/%s.torrent", filename))
+}
+
 func main() {
-  torrent.Download("./assets/test-torrents/um-iso.iso.torrent")
-  torrent.Download("./assets/test-torrents/test.torrent")
+  //torrentDownload("alice-in-wonderland")
+  //torrentDownload("um-iso.iso")
+  torrentDownload("aesop-fables")
 }

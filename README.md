@@ -64,15 +64,21 @@ Implementation of the BitTorrent protocol in Golang
 - [Understanding the BitTorrent specification](http://dandylife.net/docs/BitTorrent-Protocol.pdf)
 - [Implementing BitTorrent using AsyncIO in Python](https://youtu.be/Pe3b9bdRtiE)
 - [Torrent files](https://en.wikipedia.org/wiki/Torrent_file)
+- [Specification](https://wiki.theory.org/index.php/BitTorrentSpecification)
 
 ### Bencoding format
 
 - [Wikipedia](https://en.wikipedia.org/wiki/Bencode)
 - [BitTorrent specification](https://www.bittorrent.org/beps/bep_0003.html)
 
+### Sample torrents
+
+- [WebTorrent free torrents](https://webtorrent.io/free-torrents)
+- [Internet archive](https://archive.org/)
+
 ## TODO 
 
 - [ ] Set the valid parsing of the bencoding to use defers to catch the appropriate panics
 - [ ] Add data validation for bencoding decoding
-- [ ] Add encoding to bencoding format
+- [X] Add encoding to bencoding format
 - [ ] Update test suite and any other location where "parse" is used instead of decode

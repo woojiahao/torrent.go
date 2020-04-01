@@ -9,24 +9,11 @@ import (
 
 type (
   pieces  [][20]byte
-  torrent interface{}
+  torrent interface {
+    getAnnounce() string
+    getLength() int
+  }
 )
-
-func toMultiFileTorrent(t torrent) multiFileTorrent {
-  torrent, ok := t.(multiFileTorrent)
-  if !ok {
-    panic("cannot convert torrent to multi-file torrent")
-  }
-  return torrent
-}
-
-func toSingleFileTorrent(t torrent) singleFileTorrent {
-  torrent, ok := t.(singleFileTorrent)
-  if !ok {
-    panic("cannot convert torrent to single file torrent")
-  }
-  return torrent
-}
 
 // Single file torrent structures
 type (
@@ -42,6 +29,14 @@ type (
     pieces
   }
 )
+
+func (t singleFileTorrent) getAnnounce() string {
+  return t.announce
+}
+
+func (t singleFileTorrent) getLength() int {
+  return t.info.length
+}
 
 // Multi file torrent structures
 type (
@@ -63,10 +58,19 @@ type (
   }
 )
 
+func (t multiFileTorrent) getAnnounce() string {
+  return t.announce
+}
+
+func (t multiFileTorrent) getLength() int {
+  return 0
+}
+
 func (f file) path() string {
   return strings.Join(f.paths, "/")
 }
 
+// Generate the pieces of a torrent file
 func createPieces(piecesStr string) pieces {
   pieces := make([][20]byte, 0)
 
@@ -80,6 +84,7 @@ func createPieces(piecesStr string) pieces {
   return pieces
 }
 
+// Create the files list for multi file torrents
 func parseFiles(filesLst TList) []file {
   files := make([]file, 0)
 
@@ -101,9 +106,10 @@ func parseFiles(filesLst TList) []file {
   return files
 }
 
-func parseTorrentFile(torrentFileContent TDict) (torrent, bool) {
-  announce, info := ToString(torrentFileContent["announce"]).Value(),
-    ToDict(torrentFileContent["info"])
+// Parses a torrent file into either a single file torrent or multi file torrent
+func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
+  announce, info := ToString(torrentMetadata["announce"]).Value(),
+    ToDict(torrentMetadata["info"])
 
   isSingle := info["files"] == nil
 
@@ -137,21 +143,25 @@ func parseTorrentFile(torrentFileContent TDict) (torrent, bool) {
   return torrent, isSingle
 }
 
-// TODO Add checking for valid file path, i.e. .torrent file etc
-// Processes a given file at file path.
+// Downloads a torrent from the given file path
 func Download(torrentFilename string) {
-  torrent, isSingle := parseTorrentFile(ToDict(Decode(ReadFileContents(torrentFilename))))
-  if isSingle {
-    torrent, ok := torrent.(singleFileTorrent)
-    if !ok {
-      panic("failed to convert to single file torrent")
-    }
-    fmt.Println(torrent.info.pieceLength)
-  } else {
-    torrent, ok := torrent.(multiFileTorrent)
-    if !ok {
-      panic("failed to convert to multi-file torrent")
-    }
-    fmt.Println(torrent.info.files[0].path())
+
+  if NotExist(torrentFilename) {
+    panic("file does not exist")
+  } else if IsDir(torrentFilename) {
+    panic("filename points to a directory")
+  } else if !IsFileType(torrentFilename, "torrent") {
+    panic("given filename must be a torrent file")
   }
+
+  fileContents := ReadFileContents(torrentFilename)
+
+  torrentMetadata := ToDict(Decode(fileContents))
+
+  torrent, _ := parseTorrentFile(torrentMetadata)
+
+  info := torrentMetadata["info"].Encode()
+
+  trackerResponse := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
+  fmt.Println(trackerResponse)
 }

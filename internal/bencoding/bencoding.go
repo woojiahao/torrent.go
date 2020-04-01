@@ -5,6 +5,7 @@ import (
   "strings"
 )
 
+// TODO Add errors when the decoding fails
 func Decode(input string) TType {
   result, _ := decode(input)
   return result
