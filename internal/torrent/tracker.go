@@ -2,9 +2,11 @@ package torrent
 
 import (
   "crypto/sha1"
-  "fmt"
+  "encoding/binary"
+  . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
+  "net"
   "net/http"
   "strconv"
   "strings"
@@ -55,8 +57,40 @@ func generateInfoHash(info string) string {
   return string(h.Sum(nil))
 }
 
+func parsePeersBinary(peersBinary string) []peer {
+  if len(peersBinary)%6 != 0 {
+    panic("invalid peers string")
+  }
+
+  peers := make([]peer, 0)
+  for i := 0; i < len(peersBinary)/6; i += 6 {
+    ip, port := peersBinary[i:i+4], peersBinary[i+4:i+6]
+    peer := peer{
+      net.IP(ip).String(),
+      int(binary.BigEndian.Uint16([]byte(port))),
+    }
+    peers = append(peers, peer)
+  }
+  return peers
+}
+
+// Convert the tracker bencoding response to trackerResponse struct
+func parseTrackerResponse(metadata TDict) trackerResponse {
+  return trackerResponse{
+    ToString(metadata["failure reason"]).Value(),
+    ToString(metadata["warning message"]).Value(),
+    ToInt(metadata["interval"]).Value(),
+    ToInt(metadata["min interval"]).Value(),
+    ToString(metadata["tracker id"]).Value(),
+    ToInt(metadata["complete"]).Value(),
+    ToInt(metadata["incomplete"]).Value(),
+    parsePeersBinary(ToString(metadata["peers"]).Value()),
+  }
+}
+
+// TODO Add support for UDP connections
 // Requests information from the given tracker
-func RequestTracker(trackerURL, info string, length int) {
+func requestTracker(trackerURL, info string, length int) trackerResponse {
   infoHash := generateInfoHash(info)
   var resp *http.Response
   defer func() {
@@ -91,5 +125,7 @@ func RequestTracker(trackerURL, info string, length int) {
   body, err := ioutil.ReadAll(resp.Body)
   Check(err)
 
-  fmt.Println(string(body))
+  trackerResponseMetadata := ToDict(Decode(string(body)))
+  trackerResponse := parseTrackerResponse(trackerResponseMetadata)
+  return trackerResponse
 }

@@ -1,6 +1,7 @@
 package torrent
 
 import (
+  "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "strings"
@@ -87,9 +88,9 @@ func parseFiles(filesLst TList) []file {
 }
 
 // Parses a torrent file into either a single file torrent or multi file torrent
-func parseTorrentFile(torrentFileContent TDict) (torrent, bool) {
-  announce, info := ToString(torrentFileContent["announce"]).Value(),
-    ToDict(torrentFileContent["info"])
+func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
+  announce, info := ToString(torrentMetadata["announce"]).Value(),
+    ToDict(torrentMetadata["info"])
 
   isSingle := info["files"] == nil
 
@@ -148,13 +149,14 @@ func Download(torrentFilename string) {
       panic("failed to convert to single file torrent")
     }
 
-    RequestTracker(torrent.announce, info, torrent.info.length)
+    requestTracker(torrent.announce, info, torrent.info.length)
   } else {
     torrent, ok := torrent.(multiFileTorrent)
     if !ok {
       panic("failed to convert to multi-file torrent")
     }
 
-    RequestTracker(torrent.announce, info, 0)
+    response := requestTracker(torrent.announce, info, 0)
+    fmt.Println(response)
   }
 }
