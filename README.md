@@ -82,3 +82,4 @@ Implementation of the BitTorrent protocol in Golang
 - [ ] Add data validation for bencoding decoding
 - [X] Add encoding to bencoding format
 - [ ] Update test suite and any other location where "parse" is used instead of decode
+- [ ] Retry downloading if the original torrent failed
