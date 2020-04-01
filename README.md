@@ -56,6 +56,12 @@ Implementation of the BitTorrent protocol in Golang
 }
 ```
 
+## Note
+
+For `.torrent` files downloaded from the Internet Archive, the client requires web seeding support. This is clearly indicated 
+in the torrent files downloaded. This has yet to be added to `torrent.go` so there might be a limitation to the features of 
+the system.
+
 ## References
 
 ### BitTorrent specification
@@ -83,3 +89,4 @@ Implementation of the BitTorrent protocol in Golang
 - [X] Add encoding to bencoding format
 - [ ] Update test suite and any other location where "parse" is used instead of decode
 - [ ] Retry downloading if the original torrent failed
+- [ ] Support web seeding
