@@ -9,7 +9,10 @@ import (
 
 type (
   pieces  [][20]byte
-  torrent interface{}
+  torrent interface {
+    getAnnounce() string
+    getLength() int
+  }
 )
 
 // Single file torrent structures
@@ -26,6 +29,14 @@ type (
     pieces
   }
 )
+
+func (t singleFileTorrent) getAnnounce() string {
+  return t.announce
+}
+
+func (t singleFileTorrent) getLength() int {
+  return t.info.length
+}
 
 // Multi file torrent structures
 type (
@@ -46,6 +57,14 @@ type (
     paths  []string
   }
 )
+
+func (t multiFileTorrent) getAnnounce() string {
+  return t.announce
+}
+
+func (t multiFileTorrent) getLength() int {
+  return 0
+}
 
 func (f file) path() string {
   return strings.Join(f.paths, "/")
@@ -139,24 +158,10 @@ func Download(torrentFilename string) {
 
   torrentMetadata := ToDict(Decode(fileContents))
 
-  torrent, isSingle := parseTorrentFile(torrentMetadata)
+  torrent, _ := parseTorrentFile(torrentMetadata)
 
   info := torrentMetadata["info"].Encode()
 
-  if isSingle {
-    torrent, ok := torrent.(singleFileTorrent)
-    if !ok {
-      panic("failed to convert to single file torrent")
-    }
-
-    requestTracker(torrent.announce, info, torrent.info.length)
-  } else {
-    torrent, ok := torrent.(multiFileTorrent)
-    if !ok {
-      panic("failed to convert to multi-file torrent")
-    }
-
-    response := requestTracker(torrent.announce, info, 0)
-    fmt.Println(response)
-  }
+  trackerResponse := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
+  fmt.Println(trackerResponse)
 }
