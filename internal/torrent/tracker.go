@@ -56,12 +56,13 @@ func generateInfoHash(info string) string {
 }
 
 func parsePeersBinary(peersBinary string) []peer {
-  if len(peersBinary)%6 != 0 {
+  const peerSize = 6
+  if len(peersBinary)%peerSize != 0 {
     panic("invalid peers string")
   }
 
   peers := make([]peer, 0)
-  for i := 0; i < len(peersBinary)/6; i += 6 {
+  for i := 0; i < len(peersBinary)/peerSize; i += peerSize {
     ip, port := peersBinary[i:i+4], peersBinary[i+4:i+6]
     peer := peer{
       net.IP(ip).String(),
