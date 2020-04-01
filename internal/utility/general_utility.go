@@ -41,12 +41,12 @@ func RandomInt(min, max int) int {
 }
 
 func RandomChar() byte {
-  isCapital := RandomInt(0, 1)
+  isCapital := RandomInt(0, 2)
   switch isCapital {
   case 0:
-    return byte(RandomInt(97, 122))
+    return byte(RandomInt(97, 123))
   case 1:
-    return byte(RandomInt(65, 90))
+    return byte(RandomInt(65, 91))
   default:
     panic("invalid int")
   }
