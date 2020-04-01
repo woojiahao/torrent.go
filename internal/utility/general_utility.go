@@ -1,6 +1,7 @@
 package utility
 
 import (
+  "math/rand"
   "strconv"
   "unicode"
 )
@@ -33,4 +34,20 @@ func IsStrInRange(in string, ch ...string) bool {
   }
 
   return false
+}
+
+func randomInt(min, max int) int {
+  return min + rand.Intn(max-min)
+}
+
+func randomChar() byte {
+  isCapital := randomInt(0, 1)
+  switch isCapital {
+  case 0:
+    return byte(randomInt(97, 122))
+  case 1:
+    return byte(randomInt(65, 90))
+  default:
+    panic("invalid int")
+  }
 }
