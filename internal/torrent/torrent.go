@@ -51,6 +51,7 @@ func (f file) path() string {
   return strings.Join(f.paths, "/")
 }
 
+// Generate the pieces of a torrent file
 func createPieces(piecesStr string) pieces {
   pieces := make([][20]byte, 0)
 
@@ -64,6 +65,7 @@ func createPieces(piecesStr string) pieces {
   return pieces
 }
 
+// Create the files list for multi file torrents
 func parseFiles(filesLst TList) []file {
   files := make([]file, 0)
 
@@ -85,6 +87,7 @@ func parseFiles(filesLst TList) []file {
   return files
 }
 
+// Parses a torrent file into either a single file torrent or multi file torrent
 func parseTorrentFile(torrentFileContent TDict) (torrent, bool) {
   announce, info := ToString(torrentFileContent["announce"]).Value(),
     ToDict(torrentFileContent["info"])
@@ -121,10 +124,23 @@ func parseTorrentFile(torrentFileContent TDict) (torrent, bool) {
   return torrent, isSingle
 }
 
-// TODO Add checking for valid file path, i.e. .torrent file etc
-// Processes a given file at file path.
+// Downloads a torrent from the given file path
 func Download(torrentFilename string) {
-  torrent, isSingle := parseTorrentFile(ToDict(Decode(ReadFileContents(torrentFilename))))
+
+  if !Exists(torrentFilename) {
+    panic("file does not exist")
+  } else if IsDir(torrentFilename) {
+    panic("filename points to a directory")
+  } else if !IsFileType(torrentFilename, "torrent") {
+    panic("given filename must be a torrent file")
+  }
+
+  fileContents := ReadFileContents(torrentFilename)
+
+  torrentMetadata := ToDict(Decode(fileContents))
+
+  torrent, isSingle := parseTorrentFile(torrentMetadata)
+
   if isSingle {
     torrent, ok := torrent.(singleFileTorrent)
     if !ok {
