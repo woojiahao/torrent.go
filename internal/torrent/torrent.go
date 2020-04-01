@@ -72,12 +72,13 @@ func (f file) path() string {
 
 // Generate the pieces of a torrent file
 func createPieces(piecesStr string) pieces {
-  pieces := make([][20]byte, 0)
+  const pieceSize = 20
+  pieces := make([][pieceSize]byte, 0)
 
-  for i := 0; i < len(piecesStr); i += 20 {
-    byteSlice := []byte(piecesStr[i : i+20])
-    var byteChunk [20]byte
-    copy(byteChunk[:], byteSlice[:20])
+  for i := 0; i < len(piecesStr); i += pieceSize {
+    byteSlice := []byte(piecesStr[i : i+pieceSize])
+    var byteChunk [pieceSize]byte
+    copy(byteChunk[:], byteSlice[:pieceSize])
     pieces = append(pieces, byteChunk)
   }
 
