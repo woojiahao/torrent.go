@@ -1,7 +1,9 @@
 package utility
 
 import (
+  "net"
   . "net/http"
+  "time"
 )
 
 type QueryParameters map[string]string
@@ -22,4 +24,12 @@ func GET(URL string, parameters QueryParameters) *Response {
   Check(err)
 
   return resp
+}
+
+// Establishes a TCP connection with a given IP address.
+// The connection will timeout after a given amount of seconds.
+func TCP(address string, timeout int) *net.Conn {
+  c, err := net.DialTimeout("tcp", address, time.Duration(timeout)*time.Second)
+  LogCheck(err)
+  return &c
 }

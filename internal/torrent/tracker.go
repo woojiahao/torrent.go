@@ -2,6 +2,8 @@ package torrent
 
 import (
   "encoding/binary"
+  "errors"
+  "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
@@ -29,6 +31,10 @@ type (
   }
 )
 
+func (p *peer) address() string {
+  return fmt.Sprintf("%s:%d", p.ip, p.port)
+}
+
 // The peer_id is a 20 character string that is randomly generated at the start of each download
 func generatePeerID() string {
   peerID := make([]string, 20)
@@ -40,7 +46,7 @@ func generatePeerID() string {
     case 1:
       peerID[i] = string(RandomChar())
     default:
-      panic("invalid int")
+      LogCheck(errors.New("invalid randomly generated integer"))
     }
   }
 
@@ -58,7 +64,7 @@ func generateInfoHash(info string) string {
 func parsePeersBinary(peersBinary string) []peer {
   const peerSize = 6
   if len(peersBinary)%peerSize != 0 {
-    panic("invalid peers string")
+    LogCheck(errors.New(fmt.Sprintf("invalid peers string; length must be a multiple of %d", peerSize)))
   }
 
   peers := make([]peer, 0)
@@ -74,8 +80,8 @@ func parsePeersBinary(peersBinary string) []peer {
 }
 
 // Convert the tracker bencoding response to trackerResponse struct
-func parseTrackerResponse(metadata TDict) trackerResponse {
-  return trackerResponse{
+func parseTrackerResponse(metadata TDict) *trackerResponse {
+  return &trackerResponse{
     ToString(metadata["failure reason"]).Value(),
     ToString(metadata["warning message"]).Value(),
     ToInt(metadata["interval"]).Value(),
@@ -89,7 +95,7 @@ func parseTrackerResponse(metadata TDict) trackerResponse {
 
 // TODO Add support for UDP connections
 // Requests information from the given tracker
-func requestTracker(trackerURL, info string, length int) trackerResponse {
+func requestTracker(trackerURL, info string, length int) *trackerResponse {
   infoHash := generateInfoHash(info)
   var resp *http.Response
   defer func() {
@@ -118,13 +124,18 @@ func requestTracker(trackerURL, info string, length int) trackerResponse {
   }
 
   if resp == nil {
-    panic("cannot connect to tracker; unable to get response from announce url")
+    LogCheck(errors.New("cannot connect to tracker; unable to ger response from announce url"))
   }
 
   body, err := ioutil.ReadAll(resp.Body)
-  Check(err)
+  LogCheck(err)
 
   trackerResponseMetadata := ToDict(Decode(string(body)))
   trackerResponse := parseTrackerResponse(trackerResponseMetadata)
+
+  if trackerResponse.failureReason != "" {
+    LogCheck(errors.New(fmt.Sprintf("tracker failed with reason %s", trackerResponse.failureReason)))
+  }
+
   return trackerResponse
 }

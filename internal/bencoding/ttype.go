@@ -2,6 +2,7 @@ package bencoding
 
 import (
   "fmt"
+  . "github.com/woojiahao/torrent.go/internal/utility"
   "strings"
 )
 
@@ -18,7 +19,7 @@ type (
 
 func toTypeStatusCheck(ok bool, t string) {
   if !ok {
-    panic(fmt.Sprintf("failed to convert TType to %s", t))
+    LogCheck(&typeConversionError{t})
   }
 }
 

@@ -3,6 +3,7 @@ package utility
 import (
   "crypto/sha1"
   "hash"
+  "log"
   "math/rand"
   "strconv"
   "unicode"
@@ -15,10 +16,16 @@ func Check(err error) {
   }
 }
 
+func LogCheck(err error) {
+  if err != nil {
+    log.Fatal(err.Error())
+  }
+}
+
 // Converts a string to an integer
 func StrToInt(in string) int {
   val, err := strconv.Atoi(in)
-  Check(err)
+  LogCheck(err)
   return val
 }
 
