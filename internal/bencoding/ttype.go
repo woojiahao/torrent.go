@@ -58,9 +58,14 @@ func (t TInt) Value() int {
   return int(t)
 }
 
-// TODO Add encoding to this
 func (t TList) Encode() string {
-  return "le"
+  values := make([]string, 0)
+  values = append(values, "l")
+  for _, i := range t {
+    values = append(values, i.Encode())
+  }
+  values = append(values, "e")
+  return strings.Join(values, "")
 }
 
 func ToList(t TType) TList {
@@ -76,9 +81,14 @@ func (t TList) Value() []TType {
   return t
 }
 
-// TODO Add encoding to this
 func (t TDict) Encode() string {
-  return "de"
+  values := make([]string, 0)
+  values = append(values, "d")
+  for key, value := range t {
+    values = append(values, fmt.Sprintf("%s%s", TString(key).Encode(), value.Encode()))
+  }
+  values = append(values, "e")
+  return strings.Join(values, "")
 }
 
 func ToDict(t TType) TDict {
