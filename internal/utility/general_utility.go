@@ -36,17 +36,17 @@ func IsStrInRange(in string, ch ...string) bool {
   return false
 }
 
-func randomInt(min, max int) int {
+func RandomInt(min, max int) int {
   return min + rand.Intn(max-min)
 }
 
-func randomChar() byte {
-  isCapital := randomInt(0, 1)
+func RandomChar() byte {
+  isCapital := RandomInt(0, 1)
   switch isCapital {
   case 0:
-    return byte(randomInt(97, 122))
+    return byte(RandomInt(97, 122))
   case 1:
-    return byte(randomInt(65, 90))
+    return byte(RandomInt(65, 90))
   default:
     panic("invalid int")
   }
