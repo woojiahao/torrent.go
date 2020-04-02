@@ -91,3 +91,4 @@ the system.
 - [ ] Retry downloading if the original torrent failed
 - [ ] Support web seeding
 - [ ] Set up event bus system for when adding CLI 
+- [ ] Add proper logging and error handling to allow for dynamic system

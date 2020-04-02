@@ -150,6 +150,7 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
   return torrent, isSingle
 }
 
+// TODO Retry the download if the original returns a failure
 // Downloads a torrent from the given file path
 func Download(torrentFilename string) {
 
