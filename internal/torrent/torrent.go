@@ -5,6 +5,7 @@ import (
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
+  "log"
   "strings"
 )
 
@@ -152,6 +153,8 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
 // Downloads a torrent from the given file path
 func Download(torrentFilename string) {
 
+  log.Print("starting torrent download")
+
   if NotExist(torrentFilename) {
     LogCheck(&fileError{torrentFilename, "does not exist"})
   } else if IsDir(torrentFilename) {
@@ -160,15 +163,20 @@ func Download(torrentFilename string) {
     LogCheck(&fileError{torrentFilename, "is not a .torrent file"})
   }
 
+  log.Print("downloading torrent file contents")
   fileContents := ReadFileContents(torrentFilename)
 
+  log.Print("decoding torrent metadata")
   torrentMetadata := ToDict(Decode(fileContents))
 
+  log.Print("parsing torrent metadata into torrent file")
   torrent, _ := parseTorrentFile(torrentMetadata)
 
   info := torrentMetadata["info"].Encode()
 
+  log.Print("requesting tracker for information")
   trackerResponse := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
 
-  download(trackerResponse)
+  log.Print("downloading torrent with tracker information")
+  connectToPeers(trackerResponse)
 }

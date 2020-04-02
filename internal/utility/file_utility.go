@@ -10,7 +10,7 @@ import (
 // Reads a file's content
 func ReadFileContents(filename string) string {
   data, err := ioutil.ReadFile(filename)
-  Check(err)
+  LogCheck(err)
   return string(data)
 }
 
@@ -23,7 +23,7 @@ func NotExist(filename string) bool {
 // Check if a given filename is a directory
 func IsDir(filename string) bool {
   file, err := os.Stat(filename)
-  Check(err)
+  LogCheck(err)
   return file.IsDir()
 }
 

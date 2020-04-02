@@ -7,6 +7,7 @@ import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
+  "log"
   "net"
   "net/http"
   "strconv"
@@ -33,7 +34,7 @@ type (
 )
 
 func (p *peer) address() string {
-  return fmt.Sprintf("%s:%d", p.ip, p.port)
+  return net.JoinHostPort(p.ip, strconv.Itoa(p.port))
 }
 
 // The peer_id is a 20 character string that is randomly generated at the start of each download
@@ -114,7 +115,7 @@ func queryTracker(trackerURL, infoHash, peerID string, length int) *http.Respons
 
     // TODO Might need to make this more dynamic for checking status code
     if resp.StatusCode == 200 {
-     break
+      break
     }
   }
 
@@ -136,6 +137,7 @@ func requestTracker(trackerURL, info string, length int) *trackerResponse {
   // in case the servers don't respond to rapid successions of queries
   retry := 0
   for resp == nil && retry < 3 {
+    log.Print("tracker query try ", retry)
     if retry != 0 {
       time.Sleep(ToSeconds(5))
     }
@@ -150,11 +152,16 @@ func requestTracker(trackerURL, info string, length int) *trackerResponse {
   body, err := ioutil.ReadAll(resp.Body)
   LogCheck(err)
 
+  log.Print("decoding tracker response metadata")
   trackerResponseMetadata := ToDict(Decode(string(body)))
+
+  log.Print("parsing tracker response metadata into trackerResponse")
   trackerResponse := parseTrackerResponse(trackerResponseMetadata)
 
   if trackerResponse.failureReason != "" {
     LogCheck(errors.New(fmt.Sprintf("tracker failed with reason %s", trackerResponse.failureReason)))
+  } else if len(trackerResponse.peers) == 0 {
+    LogCheck(errors.New("no peers were provided by the tracker"))
   }
 
   return trackerResponse

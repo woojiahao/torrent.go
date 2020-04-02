@@ -24,6 +24,8 @@ func main() {
   //torrentDownload("alice-in-wonderland")
   //torrentDownload("um-iso.iso")
   //torrentDownload("aesop-fables")
-  //torrentDownload("deb.iso")
+  //for {
+  //  torrentDownload("deb.iso")
+  //}
   torrentDownload("arch")
 }
