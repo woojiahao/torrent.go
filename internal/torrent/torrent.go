@@ -153,7 +153,7 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
 // Downloads a torrent from the given file path
 func Download(torrentFilename string) {
 
-  log.Print("starting torrent download")
+  log.Printf("starting torrent download")
 
   if NotExist(torrentFilename) {
     LogCheck(&fileError{torrentFilename, "does not exist"})
@@ -175,8 +175,8 @@ func Download(torrentFilename string) {
   info := torrentMetadata["info"].Encode()
 
   log.Print("requesting tracker for information")
-  trackerResponse := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
+  trackerResponse, infoHash, peerID := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
 
   log.Print("downloading torrent with tracker information")
-  connectToPeers(trackerResponse)
+  download(trackerResponse.peers, infoHash, peerID)
 }

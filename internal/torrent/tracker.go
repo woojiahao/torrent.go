@@ -124,8 +124,8 @@ func queryTracker(trackerURL, infoHash, peerID string, length int) *http.Respons
 
 // TODO Add support for UDP connections
 // Requests information from the given tracker
-func requestTracker(trackerURL, info string, length int) *trackerResponse {
-  infoHash := generateInfoHash(info)
+func requestTracker(trackerURL, info string, length int) (trackerResponse *trackerResponse, infoHash string, peerID string) {
+  infoHash = generateInfoHash(info)
   var resp *http.Response
   defer func() {
     if resp != nil {
@@ -141,7 +141,8 @@ func requestTracker(trackerURL, info string, length int) *trackerResponse {
     if retry != 0 {
       time.Sleep(ToSeconds(5))
     }
-    resp = queryTracker(trackerURL, infoHash, generatePeerID(), length)
+    peerID = generatePeerID()
+    resp = queryTracker(trackerURL, infoHash, peerID, length)
     retry++
   }
 
@@ -156,7 +157,7 @@ func requestTracker(trackerURL, info string, length int) *trackerResponse {
   trackerResponseMetadata := ToDict(Decode(string(body)))
 
   log.Print("parsing tracker response metadata into trackerResponse")
-  trackerResponse := parseTrackerResponse(trackerResponseMetadata)
+  trackerResponse = parseTrackerResponse(trackerResponseMetadata)
 
   if trackerResponse.failureReason != "" {
     LogCheck(errors.New(fmt.Sprintf("tracker failed with reason %s", trackerResponse.failureReason)))
@@ -164,5 +165,5 @@ func requestTracker(trackerURL, info string, length int) *trackerResponse {
     LogCheck(errors.New("no peers were provided by the tracker"))
   }
 
-  return trackerResponse
+  return
 }
