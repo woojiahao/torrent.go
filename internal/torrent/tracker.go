@@ -11,6 +11,7 @@ import (
   "net/http"
   "strconv"
   "strings"
+  "time"
 )
 
 type (
@@ -93,6 +94,33 @@ func parseTrackerResponse(metadata TDict) *trackerResponse {
   }
 }
 
+func buildTrackerURLParameters(infoHash, peerID string, port, length int) *QueryParameters {
+  return &QueryParameters{
+    "info_hash":  infoHash,
+    "peer_id":    peerID,
+    "port":       strconv.Itoa(port),
+    "uploaded":   "0",
+    "downloaded": "0",
+    "left":       strconv.Itoa(length),
+    "compact":    "1",
+  }
+}
+
+func queryTracker(trackerURL, infoHash, peerID string, length int) *http.Response {
+  var resp *http.Response
+  for port := 6881; port <= 6889; port++ {
+    parameters := buildTrackerURLParameters(infoHash, peerID, port, length)
+    resp = GET(trackerURL, parameters)
+
+    // TODO Might need to make this more dynamic for checking status code
+    if resp.StatusCode == 200 {
+     break
+    }
+  }
+
+  return resp
+}
+
 // TODO Add support for UDP connections
 // Requests information from the given tracker
 func requestTracker(trackerURL, info string, length int) *trackerResponse {
@@ -104,27 +132,19 @@ func requestTracker(trackerURL, info string, length int) *trackerResponse {
     }
   }()
 
-  for port := 6881; port <= 6889; port++ {
-    parameters := QueryParameters{
-      "info_hash":  infoHash,
-      "peer_id":    generatePeerID(),
-      "port":       strconv.Itoa(port),
-      "uploaded":   "0",
-      "downloaded": "0",
-      "left":       strconv.Itoa(length),
-      "compact":    "1",
+  // When retrying to make a connection, we will pause the execution for 5 seconds
+  // in case the servers don't respond to rapid successions of queries
+  retry := 0
+  for resp == nil && retry < 3 {
+    if retry != 0 {
+      time.Sleep(ToSeconds(5))
     }
-
-    resp = GET(trackerURL, parameters)
-
-    // TODO Might need to make this more dynamic for checking status code
-    if resp.StatusCode == 200 {
-      break
-    }
+    resp = queryTracker(trackerURL, infoHash, generatePeerID(), length)
+    retry++
   }
 
   if resp == nil {
-    LogCheck(errors.New("cannot connect to tracker; unable to ger response from announce url"))
+    LogCheck(errors.New("cannot connect to tracker; unable to get response from announce url"))
   }
 
   body, err := ioutil.ReadAll(resp.Body)
