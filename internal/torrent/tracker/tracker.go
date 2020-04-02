@@ -1,4 +1,4 @@
-package torrent
+package tracker
 
 import (
   "encoding/binary"
@@ -15,26 +15,15 @@ import (
   "time"
 )
 
-type (
-  trackerResponse struct {
-    failureReason  string
-    warningMessage string
-    interval       int
-    minInterval    int
-    trackerId      string
-    complete       int
-    incomplete     int
-    peers          []peer
-  }
-
-  peer struct {
-    ip   string
-    port int
-  }
-)
-
-func (p *peer) address() string {
-  return net.JoinHostPort(p.ip, strconv.Itoa(p.port))
+type TrackerResponse struct {
+  failureReason  string
+  warningMessage string
+  interval       int
+  minInterval    int
+  trackerId      string
+  complete       int
+  incomplete     int
+  peers          []Peer
 }
 
 // The peer_id is a 20 character string that is randomly generated at the start of each download
@@ -63,16 +52,16 @@ func generateInfoHash(info string) string {
   return string(h.Sum(nil))
 }
 
-func parsePeersBinary(peersBinary string) []peer {
+func parsePeersBinary(peersBinary string) []Peer {
   const peerSize = 6
   if len(peersBinary)%peerSize != 0 {
     LogCheck(errors.New(fmt.Sprintf("invalid peers string; length must be a multiple of %d", peerSize)))
   }
 
-  peers := make([]peer, 0)
+  peers := make([]Peer, 0)
   for i := 0; i < len(peersBinary)/peerSize; i += peerSize {
     ip, port := peersBinary[i:i+4], peersBinary[i+4:i+6]
-    peer := peer{
+    peer := Peer{
       net.IP(ip).String(),
       int(binary.BigEndian.Uint16([]byte(port))),
     }
@@ -81,9 +70,9 @@ func parsePeersBinary(peersBinary string) []peer {
   return peers
 }
 
-// Convert the tracker bencoding response to trackerResponse struct
-func parseTrackerResponse(metadata TDict) *trackerResponse {
-  return &trackerResponse{
+// Convert the tracker bencoding response to TrackerResponse struct
+func parseTrackerResponse(metadata TDict) *TrackerResponse {
+  return &TrackerResponse{
     ToString(metadata["failure reason"]).Value(),
     ToString(metadata["warning message"]).Value(),
     ToInt(metadata["interval"]).Value(),
@@ -124,8 +113,9 @@ func queryTracker(trackerURL, infoHash, peerID string, length int) *http.Respons
 
 // TODO Add support for UDP connections
 // Requests information from the given tracker
-func requestTracker(trackerURL, info string, length int) (trackerResponse *trackerResponse, infoHash string, peerID string) {
-  infoHash = generateInfoHash(info)
+func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string) {
+  infoHash := generateInfoHash(info)
+  var peerID string
   var resp *http.Response
   defer func() {
     if resp != nil {
@@ -156,8 +146,8 @@ func requestTracker(trackerURL, info string, length int) (trackerResponse *track
   log.Print("decoding tracker response metadata")
   trackerResponseMetadata := ToDict(Decode(string(body)))
 
-  log.Print("parsing tracker response metadata into trackerResponse")
-  trackerResponse = parseTrackerResponse(trackerResponseMetadata)
+  log.Print("parsing tracker response metadata into TrackerResponse")
+  trackerResponse := parseTrackerResponse(trackerResponseMetadata)
 
   if trackerResponse.failureReason != "" {
     LogCheck(errors.New(fmt.Sprintf("tracker failed with reason %s", trackerResponse.failureReason)))
@@ -165,5 +155,5 @@ func requestTracker(trackerURL, info string, length int) (trackerResponse *track
     LogCheck(errors.New("no peers were provided by the tracker"))
   }
 
-  return
+  return trackerResponse.peers, infoHash, peerID
 }

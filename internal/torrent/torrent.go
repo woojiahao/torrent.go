@@ -4,6 +4,8 @@ import (
   "errors"
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
+  "github.com/woojiahao/torrent.go/internal/torrent/downloader"
+  "github.com/woojiahao/torrent.go/internal/torrent/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
   "strings"
@@ -176,8 +178,8 @@ func Download(torrentFilename string) {
   info := torrentMetadata["info"].Encode()
 
   log.Print("requesting tracker for information")
-  trackerResponse, infoHash, peerID := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
+  peers, infoHash, peerID := tracker.RequestTracker(torrent.getAnnounce(), info, torrent.getLength())
 
   log.Print("downloading torrent with tracker information")
-  download(trackerResponse.peers, infoHash, peerID)
+  downloader.download(peers, infoHash, peerID)
 }
