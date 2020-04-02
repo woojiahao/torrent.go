@@ -25,7 +25,7 @@ func main() {
   //torrentDownload("um-iso.iso")
   //torrentDownload("aesop-fables")
   //for {
-  //  torrentDownload("deb.iso")
+  //torrentDownload("deb.iso")
   //}
   torrentDownload("arch")
 }

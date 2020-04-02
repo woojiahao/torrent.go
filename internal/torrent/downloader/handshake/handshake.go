@@ -61,9 +61,6 @@ func New(infoHash, peerID string) *Handshake {
 }
 
 func Request(conn net.Conn, h *Handshake) error {
-  defer func() {
-    _ = conn.Close()
-  }()
   // conn.Write returns an int specifying the length of the message
   _, err := conn.Write(h.serialize())
   if err != nil {

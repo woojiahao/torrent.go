@@ -2,6 +2,7 @@ package downloader
 
 import (
   "github.com/woojiahao/torrent.go/internal/torrent/downloader/handshake"
+  "github.com/woojiahao/torrent.go/internal/torrent/downloader/p2p"
   "github.com/woojiahao/torrent.go/internal/torrent/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
@@ -23,7 +24,13 @@ func connectPeer(address string, h *handshake.Handshake) {
     return
   }
 
-  choked, interested := 2, 0
+  log.Printf("connected to %s", address)
+
+  err = p2p.Peer2Peer(conn)
+  if err != nil {
+    log.Print(err.Error())
+    return
+  }
 }
 
 // Initiates the TCP connection to begin downloading the torrent information.

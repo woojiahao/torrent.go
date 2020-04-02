@@ -181,5 +181,5 @@ func Download(torrentFilename string) {
   peers, infoHash, peerID := tracker.RequestTracker(torrent.getAnnounce(), info, torrent.getLength())
 
   log.Print("downloading torrent with tracker information")
-  downloader.download(peers, infoHash, peerID)
+  downloader.Download(peers, infoHash, peerID)
 }
