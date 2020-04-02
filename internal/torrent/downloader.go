@@ -18,6 +18,7 @@ type handshake struct {
   peerID   string
 }
 
+// Serialize a handshake into bytes to be sent to the TCP server
 func (h *handshake) Serialize() []byte {
   buf := make([]byte, h.pstrlen+49)
   buf[0] = byte(h.pstrlen)
@@ -27,6 +28,27 @@ func (h *handshake) Serialize() []byte {
   cur += copy(buf[cur:], h.infoHash[:])
   cur += copy(buf[cur:], h.peerID[:])
   return buf
+}
+
+// Deserialize an array of bytes received from a TCP server
+// The bytes received are in the same format as the ones that are serialized
+func Deserialize(b []byte) *handshake {
+  pstrLen := int(b[0])
+  cur := 1
+  pstr, cur := string(b[cur:cur+pstrLen]), cur+pstrLen
+  buf, cur := b[cur:cur+8], cur+8
+  var reserved [8]byte
+  copy(reserved[:], buf[:])
+  infoHash, cur := string(b[cur:cur+20]), cur+20
+  peerID := string(b[cur:])
+
+  return &handshake{
+    pstrLen,
+    pstr,
+    reserved,
+    infoHash,
+    peerID,
+  }
 }
 
 func buildHandshakeRequest(infoHash, peerID string) *handshake {
@@ -68,14 +90,13 @@ func handshakeRequest(conn net.Conn, h *handshake) error {
   if err != nil {
     return err
   }
-  response := string(buf)
-  responseInfoHash := response[28:len(response)-20]
-  if responseInfoHash != h.infoHash {
+  response := Deserialize(buf)
+  if response.infoHash != h.infoHash {
     return errors.New(
       Sprintf(
         "info hash returned by peer does not match client's info hash; expected: %v, given: %v",
         h.infoHash,
-        responseInfoHash,
+        response.infoHash,
       ),
     )
   }
