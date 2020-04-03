@@ -78,7 +78,7 @@ func GenerateSHA1Hash(input string) hash.Hash {
 
 func ToBigEndian(value, size int) []byte {
   buf := make([]byte, size)
-  binary.BigEndian.PutUint16(buf, uint16(value))
+  binary.BigEndian.PutUint32(buf, uint32(value))
   return buf
 }
 
