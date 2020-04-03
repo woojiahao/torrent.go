@@ -2,6 +2,7 @@ package utility
 
 import (
   "crypto/sha1"
+  "encoding/binary"
   "hash"
   "log"
   "math/rand"
@@ -73,4 +74,14 @@ func GenerateSHA1Hash(input string) hash.Hash {
   h := sha1.New()
   h.Write([]byte(input))
   return h
+}
+
+func ToBigEndian(value, size int) []byte {
+  buf := make([]byte, size)
+  binary.BigEndian.PutUint16(buf, uint16(value))
+  return buf
+}
+
+func FromBigEndian(value []byte) int {
+  return int(binary.BigEndian.Uint32(value))
 }
