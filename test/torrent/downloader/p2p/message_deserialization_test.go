@@ -30,66 +30,32 @@ func TestNotInterestedDeserialization(t *testing.T) {
 
 // Have 5:4:<piece index>
 func TestHaveDeserialization(t *testing.T) {
-  for index := 0; index < 9999; index++ {
-    testDeserialization(t, 5, Have, ToBigEndian(index, 4)...)
-  }
+  testHave(t, testDeserialization)
 }
 
 // Bitfield 1+X:5:<bitfield>
 func TestBitfieldDeserialization(t *testing.T) {
-  generateBitfield := func(initial byte, size int) []byte {
-    bitfield := make([]byte, size)
-    for i := range bitfield {
-      bitfield[i] = initial
-    }
-    return bitfield
-  }
-
-  for size := 1; size < 50; size++ {
-    for initial := 1; initial < 100; initial++ {
-      bitfield := generateBitfield(byte(initial), size)
-      testDeserialization(t, 1+len(bitfield), Bitfield, bitfield...)
-    }
-  }
+  testBitfield(t, testDeserialization)
 }
 
 // Request 13:6:<index><begin><length>
 func TestRequestDeserialization(t *testing.T) {
-  testDeserializationWithPayload(t, 13, Request)
+  testWithPayload(t, 13, Request, testDeserialization)
 }
 
 // Piece 9+X:7:<index><begin><block>
 func TestPieceDeserialization(t *testing.T) {
-  block := []byte{25, 69, 112, 187, 115, 1, 0, 255, 199, 100, 1, 0}
-
-  generatePiece := func(index, begin int, block []byte) []byte {
-    buf := make([]byte, 0, 8+len(block))
-    buf = append(buf, ToBigEndian(index, 4)...)
-    buf = append(buf, ToBigEndian(begin, 4)...)
-    buf = append(buf, block...)
-    return buf
-  }
-
-  for index := 1; index < 99; index++ {
-    for begin := 1; begin < 99; begin++ {
-      piece := generatePiece(index, begin, block)
-      testDeserialization(t, 9+len(block), Piece, piece...)
-    }
-  }
+  testPiece(t, testDeserialization)
 }
 
 // Cancel 13:8:<index><begin><length>
 func TestCancelDeserialization(t *testing.T) {
-  testDeserializationWithPayload(t, 13, Cancel)
+  testWithPayload(t, 13, Cancel, testDeserialization)
 }
 
 // Port 3:9:<listen port>
 func TestPortDeserialization(t *testing.T) {
-  for port1 := 0; port1 < 100; port1++ {
-    for port2 := 0; port2 < 100; port2++ {
-      testDeserialization(t, 3, Port, byte(port1), byte(port2))
-    }
-  }
+  testPiece(t, testDeserialization)
 }
 
 func buildMessage(lengthPrefix int, id MessageID, payload []byte) *Message {
@@ -109,26 +75,6 @@ func testDeserialization(t *testing.T, lengthPrefix int, id MessageID, payload .
   expected := buildMessage(lengthPrefix, id, payload)
   mb := buildMessageBytes(lengthPrefix, id, payload)
   assertDeserialization(t, expected, Deserialize(mb))
-}
-
-// Test deserialization of message IDs with payload of <index><begin><length>
-func testDeserializationWithPayload(t *testing.T, lengthPrefix int, id MessageID) {
-  generatePayload := func(index, begin, length int) []byte {
-    buf := make([]byte, 0, 12)
-    buf = append(buf, ToBigEndian(index, 4)...)
-    buf = append(buf, ToBigEndian(begin, 4)...)
-    buf = append(buf, ToBigEndian(length, 4)...)
-    return buf
-  }
-
-  for index := 1; index <= 100; index++ {
-    for begin := 1; begin <= 100; begin++ {
-      for length := 1; length <= 100; length++ {
-        payload := generatePayload(index, begin, length)
-        testDeserialization(t, lengthPrefix, id, payload...)
-      }
-    }
-  }
 }
 
 func assertDeserialization(t *testing.T, expected, actual *Message) {
