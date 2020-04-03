@@ -1,70 +1,83 @@
 package p2p
 
 import (
-  "encoding/binary"
+  . "github.com/woojiahao/torrent.go/internal/utility"
+)
+
+// Piece and Bitfield do not have a default length prefixes and payload sizes
+// because they have dynamic sizes that have to be calculated separately
+var (
+  lengthPrefixes = map[MessageID]int{
+    Choke:         1,
+    Unchoke:       1,
+    Interested:    1,
+    NotInterested: 1,
+    Cancel:        13,
+    Request:       13,
+    Have:          5,
+    Port:          3,
+  }
+
+  payloadSizes = map[MessageID]int{
+    Choke:         0,
+    Unchoke:       0,
+    Interested:    0,
+    NotInterested: 0,
+    Cancel:        12,
+    Request:       12,
+    Have:          4,
+    Port:          2,
+  }
+
+  // This variable is used to send a keep alive packet to the server that cannot be serialized
+  KeepAlive = []byte{0, 0, 0, 0}
 )
 
 // For all integers in the payload, they will be regarded as BigEndian integers with 4 bytes
-type message struct {
-  lengthPrefix int
-  messageID
-  payload []byte
+type Message struct {
+  LengthPrefix int
+  MessageID    MessageID
+  Payload      []byte
 }
 
-// This variable is used to send a keep alive packet to the server that cannot be serialized
-var keepAlive = []byte{0, 0, 0, 0}
-
 // Serializes a message into a stream of bytes. The given lengthPrefix is ignored as it must be calculated
-// given the messageID and provided payload.
-func (m *message) serialize() []byte {
+// given the MessageID and provided payload.
+func (m *Message) Serialize() []byte {
+  messageID := m.MessageID
   buf := make([]byte, 0)
+
   var length int
-  switch m.messageID {
-  case choke:
-  case unchoke:
-  case interested:
-  case notInterested:
-    length = 1
-  case cancel:
-  case request:
-    length = 13
-  case have:
-    length = 5
-  case bitfield:
-  case piece:
-    // For piece, the payload will be 8 bytes + block
-    length = len(m.payload) + 1
-  case port:
-    length = 3
+  if messageID == Piece || messageID == Bitfield {
+    length = len(m.Payload) + 1
+  } else {
+    length = lengthPrefixes[messageID]
   }
 
-  lengthPrefix := make([]byte, 4)
-  binary.BigEndian.PutUint16(lengthPrefix, uint16(length))
+  lengthPrefix := ToBigEndian(length, 4)
 
-  copy(buf, lengthPrefix)
+  buf = append(buf, lengthPrefix...)
+  buf = append(buf, byte(int(m.MessageID)))
+  buf = append(buf, m.Payload...)
 
   return buf
 }
 
-func deserialize(b []byte) *message {
-  lengthPrefix, messageID := int(binary.BigEndian.Uint32(b[:4])), messageID(int(b[4]))
-  payloadSize, payload := 0, make([]byte, 0)
-  switch messageID {
-  case have:
-    payloadSize = 4
-  case bitfield:
-  case piece:
+func Deserialize(b []byte) *Message {
+  lengthPrefix, messageID := FromBigEndian(b[:4]), MessageID(int(b[4]))
+
+  var payloadSize int
+  if messageID == Piece || messageID == Bitfield {
     payloadSize = lengthPrefix - 1
-  case port:
-    payloadSize = 2
-  case request:
-  case cancel:
-    payloadSize = 12
+  } else {
+    payloadSize = payloadSizes[messageID]
   }
+
+  payload := make([]byte, 0)
   if payloadSize != 0 {
     payload = b[5 : 5+payloadSize]
   }
-  return &message{
+
+  return &Message{
     lengthPrefix,
     messageID,
     payload,

@@ -1,16 +1,16 @@
 package p2p
 
-type messageID int
+type MessageID int
 
 const (
-  choke         messageID = 0
-  unchoke       messageID = 1
-  interested    messageID = 2
-  notInterested messageID = 3
-  have          messageID = 4
-  bitfield      messageID = 5
-  request       messageID = 6
-  piece         messageID = 7
-  cancel        messageID = 8
-  port          messageID = 9
+  Choke         MessageID = 0
+  Unchoke       MessageID = 1
+  Interested    MessageID = 2
+  NotInterested MessageID = 3
+  Have          MessageID = 4
+  Bitfield      MessageID = 5
+  Request       MessageID = 6
+  Piece         MessageID = 7
+  Cancel        MessageID = 8
+  Port          MessageID = 9
 )

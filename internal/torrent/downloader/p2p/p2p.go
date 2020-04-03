@@ -15,7 +15,7 @@ func Peer2Peer(conn net.Conn) error {
       // TODO factor in EOF errors and ignore those
       return errors.New(fmt.Sprintf("connection encountered error %s", err.Error()))
     }
-    msg := deserialize(buf)
+    msg := Deserialize(buf)
 
     fmt.Println(msg)
   }
