@@ -3,7 +3,7 @@ package p2p
 import (
   "errors"
   "fmt"
-  "github.com/woojiahao/torrent.go/internal/torrent/downloader"
+  "github.com/woojiahao/torrent.go/internal/downloader"
   . "github.com/woojiahao/torrent.go/internal/utility"
 )
 

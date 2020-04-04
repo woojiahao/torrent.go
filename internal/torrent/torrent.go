@@ -4,8 +4,8 @@ import (
   "errors"
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
-  "github.com/woojiahao/torrent.go/internal/torrent/downloader"
-  "github.com/woojiahao/torrent.go/internal/torrent/tracker"
+  "github.com/woojiahao/torrent.go/internal/downloader"
+  "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
 )
