@@ -1,8 +1,8 @@
 package downloader
 
 import (
-  "github.com/woojiahao/torrent.go/internal/downloader/handshake"
-  . "github.com/woojiahao/torrent.go/internal/downloader/p2p"
+  "github.com/woojiahao/torrent.go/internal/handshake"
+  . "github.com/woojiahao/torrent.go/internal/p2p"
   "github.com/woojiahao/torrent.go/internal/torrent"
   "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"

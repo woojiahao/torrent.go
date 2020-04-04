@@ -2,7 +2,7 @@ package utility
 
 import (
   "errors"
-  "github.com/woojiahao/torrent.go/internal/downloader/p2p"
+  "github.com/woojiahao/torrent.go/internal/p2p"
   "net"
 )
 
