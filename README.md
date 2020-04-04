@@ -115,3 +115,4 @@ interested and the peer remains unchoked.
 - [ ] Set up event bus system for when adding CLI 
 - [ ] Add proper logging and error handling to allow for dynamic system
 - [ ] Clean up bencoding code (e.g. place the counter variable in the for loop)
+- [ ] Flatten out the folder structure to allow the torrent related files to be split out respectively
