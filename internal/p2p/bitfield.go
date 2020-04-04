@@ -16,3 +16,13 @@ func (b Bitfield) HasPiece(pieceIndex int) bool {
   }
   return b[byteIndex]>>(7-offset)&1 != 0
 }
+
+// Sets a specified piece index to 1
+func (b Bitfield) SetPiece(pieceIndex int) {
+  byteIndex := pieceIndex % 8
+  offset := pieceIndex / 8
+  if len(b)-1 < byteIndex {
+    return
+  }
+  b[byteIndex] |= 1 << (7 - offset)
+}
