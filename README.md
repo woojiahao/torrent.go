@@ -75,7 +75,7 @@ The key actors of the process is the **client** and **peer**.
 4. If the peer wants to communicate with the client, it will respond with a response using the same format; this will mean that
     the TCP connection has been established and the client can begin requesting the peer for pieces of the file
 5. Client and peer will communciate in an alternating fashion
-6a. If the client already has some pieces of the file, it can send a `bitfield` request to the peer; this request informs the
+6. If the client already has some pieces of the file, it can send a `bitfield` request to the peer; this request informs the
     peer of the bits that it already has
 
 ## References
