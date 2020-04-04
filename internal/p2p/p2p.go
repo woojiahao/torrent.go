@@ -3,23 +3,23 @@ package p2p
 import (
   "errors"
   "fmt"
-  "github.com/woojiahao/torrent.go/internal/downloader"
-  . "github.com/woojiahao/torrent.go/internal/utility"
+  . "github.com/woojiahao/torrent.go/internal/connection"
 )
 
 const maxBufferSize = 16384
 
 // The peer protocol is an alternating stream of length prefixes and messages
-func StartDownloadWorker(conn *TCPConn, clientState *downloader.ClientState) error {
+func StartDownloadWorker(conn *Connection) error {
   defer func() {
     _ = conn.Conn.Close()
   }()
 
   for {
-    err := conn.SendMessage(UnchokeID)
-    err = conn.SendMessage(InterestedID)
-
-    err = conn.SendMessage(RequestID)
+    // TODO Replace these with the potential client object instead
+    //err := conn.SendMessage(UnchokeID)
+    //err = conn.SendMessage(InterestedID)
+    //
+    //err = conn.SendMessage(RequestID)
 
     // TODO Alter the byte length to be smaller if large bytes are not needed
     buf, err := conn.Receive(maxBufferSize)

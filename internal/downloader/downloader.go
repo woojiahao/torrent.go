@@ -1,11 +1,9 @@
 package downloader
 
 import (
-  "github.com/woojiahao/torrent.go/internal/handshake"
+  . "github.com/woojiahao/torrent.go/internal/connection"
   . "github.com/woojiahao/torrent.go/internal/p2p"
-  "github.com/woojiahao/torrent.go/internal/torrent"
   "github.com/woojiahao/torrent.go/internal/tracker"
-  . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
 )
 
@@ -16,7 +14,7 @@ type ClientState struct {
 
 // Establishes a connection with a peer and continues to use the peer to
 // obtain pieces until the peer has opted out of the process
-func connectPeer(address string, h *handshake.Handshake) {
+func connectPeer(address string, h *Handshake) {
   log.Println("connecting to", address)
   conn, err := TCP(address, 3)
   log.Println("connecting to ", address)
@@ -25,7 +23,7 @@ func connectPeer(address string, h *handshake.Handshake) {
     return
   }
 
-  err = handshake.Request(conn, h)
+  err = Request(conn, h)
   if err != nil {
     log.Printf("connection to %s dropped due to reason %s", address, err)
     return
@@ -33,7 +31,7 @@ func connectPeer(address string, h *handshake.Handshake) {
 
   log.Printf("connected to %s", address)
 
-  clientState := ClientState{false, true}
+  //clientState := ClientState{false, true}
 
   err = StartDownloadWorker(conn)
   if err != nil {
@@ -47,8 +45,8 @@ func connectPeer(address string, h *handshake.Handshake) {
 // downloading process.
 // When establishing the TCP connections, we should be ignoring the ones that refuse the connection
 // or timeout the request.
-func Download(peers []tracker.Peer, torrent torrent.Torrent, infoHash, peerID string) {
-  h := handshake.New(infoHash, peerID)
+func Download(peers []tracker.Peer, infoHash, peerID string) {
+  h := New(infoHash, peerID)
   for _, peer := range peers {
     connectPeer(peer.Address(), h)
   }

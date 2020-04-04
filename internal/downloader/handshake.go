@@ -1,9 +1,9 @@
-package handshake
+package downloader
 
 import (
   "errors"
   "fmt"
-  . "github.com/woojiahao/torrent.go/internal/utility"
+  . "github.com/woojiahao/torrent.go/internal/connection"
   "log"
 )
 
@@ -60,7 +60,7 @@ func New(infoHash, peerID string) *Handshake {
   }
 }
 
-func Request(conn *TCPConn, h *Handshake) error {
+func Request(conn *Connection, h *Handshake) error {
   err := conn.Send(h.serialize())
   if err != nil {
     log.Fatalf("error occured %s", err.Error())

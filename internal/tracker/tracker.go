@@ -15,7 +15,7 @@ import (
   "time"
 )
 
-type TrackerResponse struct {
+type Response struct {
   failureReason  string
   warningMessage string
   interval       int
@@ -70,9 +70,9 @@ func parsePeersBinary(peersBinary string) []Peer {
   return peers
 }
 
-// Convert the tracker bencoding response to TrackerResponse struct
-func parseTrackerResponse(metadata TDict) *TrackerResponse {
-  return &TrackerResponse{
+// Convert the tracker bencoding response to Response struct
+func parseTrackerResponse(metadata TDict) *Response {
+  return &Response{
     ToString(metadata["failure reason"]).Value(),
     ToString(metadata["warning message"]).Value(),
     ToInt(metadata["interval"]).Value(),
@@ -146,7 +146,7 @@ func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string
   log.Print("decoding tracker response metadata")
   trackerResponseMetadata := ToDict(Decode(string(body)))
 
-  log.Print("parsing tracker response metadata into TrackerResponse")
+  log.Print("parsing tracker response metadata into Response")
   trackerResponse := parseTrackerResponse(trackerResponseMetadata)
 
   if trackerResponse.failureReason != "" {
