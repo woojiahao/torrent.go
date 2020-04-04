@@ -8,7 +8,12 @@ import (
 )
 
 func Peer2Peer(conn net.Conn) error {
-  for count := 0; ; count++ {
+  var bitfield Bitfield
+  isChoked, isInterested, isFirst := false, true, true
+
+  fmt.Println(isChoked)
+
+  for {
     // TODO Alter the byte length to be smaller if large bytes are not needed
     buf := make([]byte, 512)
     _, err := conn.Read(buf)
@@ -17,12 +22,25 @@ func Peer2Peer(conn net.Conn) error {
       return errors.New(fmt.Sprintf("connection encountered error %s", err.Error()))
     }
     msg := Deserialize(buf)
-    if msg.MessageID == BitfieldID {
-      if count != 0 {
+
+    switch msg.MessageID {
+    case ChokeID:
+      // If the server is choked, then send a message to inform them that you are still interested
+      if isInterested {
+        interestedMessage := Message{MessageID: InterestedID}
+        _, _ = conn.Write(interestedMessage.Serialize())
+      } else {
+        break
+      }
+    case BitfieldID:
+      if !isFirst {
         log.Fatal("message received from cannot be bitfield as this is not the first message immediately after")
       }
 
-      fmt.Println(msg.Payload)
+      bitfield = msg.Payload
+      fmt.Println(bitfield)
     }
+
+    isFirst = false
   }
 }

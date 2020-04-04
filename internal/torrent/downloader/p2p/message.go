@@ -57,7 +57,9 @@ func (m *Message) Serialize() []byte {
 
   buf = append(buf, lengthPrefix...)
   buf = append(buf, byte(int(m.MessageID)))
-  buf = append(buf, m.Payload...)
+  if m.Payload != nil {
+    buf = append(buf, m.Payload...)
+  }
 
   return buf
 }
