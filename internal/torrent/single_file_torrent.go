@@ -11,22 +11,22 @@ type (
     length      int
     name        string
     pieceLength int
-    pieces
+    Pieces
   }
 )
 
-func (t singleFileTorrent) getAnnounce() string {
+func (t singleFileTorrent) GetAnnounce() string {
   return t.announce
 }
 
-func (t singleFileTorrent) getLength() int {
+func (t singleFileTorrent) GetLength() int {
   return t.info.length
 }
 
-func (t singleFileTorrent) getPieces() pieces {
-  return t.info.pieces
+func (t singleFileTorrent) GetPieces() Pieces {
+  return t.info.Pieces
 }
 
-func (t singleFileTorrent) getPieceLength() int {
+func (t singleFileTorrent) GetPieceLength() int {
   return t.info.pieceLength
 }

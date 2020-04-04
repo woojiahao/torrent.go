@@ -13,7 +13,7 @@ type (
     files       []file
     name        string
     pieceLength int
-    pieces
+    Pieces
   }
 
   file struct {
@@ -22,19 +22,19 @@ type (
   }
 )
 
-func (t multiFileTorrent) getAnnounce() string {
+func (t multiFileTorrent) GetAnnounce() string {
   return t.announce
 }
 
-func (t multiFileTorrent) getLength() int {
+func (t multiFileTorrent) GetLength() int {
   return 0
 }
 
-func (t multiFileTorrent) getPieces() pieces {
-  return t.info.pieces
+func (t multiFileTorrent) GetPieces() Pieces {
+  return t.info.Pieces
 }
 
-func (t multiFileTorrent) getPieceLength() int {
+func (t multiFileTorrent) GetPieceLength() int {
   return t.info.pieceLength
 }
 

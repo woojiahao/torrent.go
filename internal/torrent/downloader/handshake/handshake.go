@@ -3,8 +3,8 @@ package handshake
 import (
   "errors"
   "fmt"
+  . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
-  "net"
 )
 
 const pstr = "BitTorrent protocol"
@@ -60,19 +60,19 @@ func New(infoHash, peerID string) *Handshake {
   }
 }
 
-func Request(conn net.Conn, h *Handshake) error {
-  // conn.Write returns an int specifying the length of the message
-  _, err := conn.Write(h.serialize())
+func Request(conn *TCPConn, h *Handshake) error {
+  err := conn.Send(h.serialize())
   if err != nil {
     log.Fatalf("error occured %s", err.Error())
   }
 
-  buf := make([]byte, h.pstrlen+49)
-  _, err = conn.Read(buf)
+  buf, err := conn.Receive(h.pstrlen + 49)
   if err != nil {
     return err
   }
+
   response := deserialize(buf)
+
   if response.infoHash != h.infoHash {
     return errors.New(
       fmt.Sprintf(

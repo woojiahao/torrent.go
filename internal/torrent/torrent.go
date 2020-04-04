@@ -11,17 +11,17 @@ import (
 )
 
 type (
-  pieces  [][20]byte
-  torrent interface {
-    getAnnounce() string
-    getLength() int
-    getPieces() pieces
-    getPieceLength() int
+  Pieces  [][20]byte
+  Torrent interface {
+    GetAnnounce() string
+    GetLength() int
+    GetPieces() Pieces
+    GetPieceLength() int
   }
 )
 
 // Generate the pieces of a torrent file
-func createPieces(piecesStr string) pieces {
+func createPieces(piecesStr string) Pieces {
   const pieceSize = 20
   pieces := make([][pieceSize]byte, 0)
 
@@ -62,7 +62,7 @@ func parseFiles(filesLst TList) []file {
 }
 
 // Parses a torrent file into either a single file torrent or multi file torrent
-func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
+func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
   announce, info := ToString(torrentMetadata["announce"]).Value(),
     ToDict(torrentMetadata["info"])
 
@@ -72,7 +72,7 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
     ToInt(info["piece length"]).Value(),
     createPieces(ToString(info["pieces"]).Value())
 
-  var torrent torrent
+  var torrent Torrent
 
   if isSingle {
     torrent = singleFileTorrent{
@@ -81,7 +81,7 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
         length:      ToInt(info["length"]).Value(),
         name:        name,
         pieceLength: pieceLength,
-        pieces:      pieces,
+        Pieces:      pieces,
       },
     }
   } else {
@@ -91,7 +91,7 @@ func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
         files:       parseFiles(ToList(info["files"])),
         name:        name,
         pieceLength: pieceLength,
-        pieces:      pieces,
+        Pieces:      pieces,
       },
     }
   }
@@ -121,13 +121,13 @@ func Download(torrentFilename string) {
   log.Print("parsing torrent metadata into torrent file")
   torrent, _ := parseTorrentFile(torrentMetadata)
 
-  log.Printf("pieces available %d with piece length of %d", len(torrent.getPieces()), torrent.getPieceLength())
-
-  info := torrentMetadata["info"].Encode()
-
   log.Print("requesting tracker for information")
-  peers, infoHash, peerID := tracker.RequestTracker(torrent.getAnnounce(), info, torrent.getLength())
+  peers, infoHash, peerID := tracker.RequestTracker(
+    torrent.GetAnnounce(),
+    torrentMetadata["info"].Encode(),
+    torrent.GetLength(),
+  )
 
   log.Print("downloading torrent with tracker information")
-  downloader.Download(peers, infoHash, peerID)
+  downloader.Download(peers, torrent, infoHash, peerID)
 }

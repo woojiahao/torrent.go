@@ -2,6 +2,7 @@ package utility
 
 import (
   "errors"
+  "github.com/woojiahao/torrent.go/internal/torrent/downloader/p2p"
   "net"
 )
 
@@ -27,11 +28,19 @@ func (c *TCPConn) Send(data []byte) error {
   return err
 }
 
+// Writes a message to the TCP connection
+func (c *TCPConn) SendMessage(id p2p.MessageID, payload ...byte) error {
+  m := p2p.Message{
+    MessageID: id,
+    Payload:   payload,
+  }
+  err := c.Send(m.Serialize())
+  return err
+}
+
 // Read from a TCP connection
 func (c *TCPConn) Receive(bufSize int) ([]byte, error) {
   buf := make([]byte, bufSize)
   _, err := c.Conn.Read(buf)
   return buf, err
 }
-
-func (c *TCPConn)

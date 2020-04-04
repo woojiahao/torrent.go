@@ -1,21 +1,18 @@
 package p2p
 
-import (
-  . "github.com/woojiahao/torrent.go/internal/utility"
-)
-
 // A bitfield is an array of bytes with each byte
 // Each bit in the bitfield corresponds to a piece index
 type Bitfield []byte
 
 // pieceIndex starts with 0
+// We first shift the byte to the right such that the piece will be at the
+// lowest bit. Then we simply mask the byte with 1 and if the result is 1,
+// then we know that the piece exists, else, the piece does not exist
 func (b Bitfield) HasPiece(pieceIndex int) bool {
-  // Which byte the piece resides in
   byteIndex := pieceIndex / 8
   offset := pieceIndex % 8
-  mask := byte(Pow(2, 7-offset))
   if len(b)-1 < byteIndex {
     return false
   }
-  return b[byteIndex]&mask == mask
+  return b[byteIndex]>>(7-offset)&1 != 0
 }
