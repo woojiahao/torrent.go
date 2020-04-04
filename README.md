@@ -62,6 +62,22 @@ For `.torrent` files downloaded from the Internet Archive, the client requires w
 in the torrent files downloaded. This has yet to be added to `torrent.go` so there might be a limitation to the features of 
 the system.
 
+## Peer protocol process
+
+The peer protocol is performed over a TCP connection. As there may be multiple peers to be connected to at once, each peer 
+connection will maintain its own flow.
+
+The key actors of the process is the **client** and **peer**.
+
+1. Client attempts to establish a TCP connection to the peer
+2. If the peer is available, the peer will allow the TCP connection
+3. Client sends the a handshake request to the peer with the following format: `<pstrlen><pstr><reserved><info_hash><peer_id>`
+4. If the peer wants to communicate with the client, it will respond with a response using the same format; this will mean that
+    the TCP connection has been established and the client can begin requesting the peer for pieces of the file
+5. Client and peer will communciate in an alternating fashion
+6a. If the client already has some pieces of the file, it can send a `bitfield` request to the peer; this request informs the
+    peer of the bits that it already has
+
 ## References
 
 ### BitTorrent specification
