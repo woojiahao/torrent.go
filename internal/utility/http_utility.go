@@ -1,7 +1,6 @@
 package utility
 
 import (
-  "net"
   . "net/http"
 )
 
@@ -25,9 +24,3 @@ func GET(URL string, parameters *QueryParameters) *Response {
   return resp
 }
 
-// Establishes a TCP connection with a given IP address.
-// The connection will timeout after a given amount of seconds.
-func TCP(address string, timeout int) (c net.Conn, err error) {
-  c, err = net.DialTimeout("tcp", address, ToSeconds(timeout))
-  return c, err
-}

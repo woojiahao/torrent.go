@@ -77,6 +77,12 @@ The key actors of the process is the **client** and **peer**.
 5. Client and peer will communciate in an alternating fashion
 6. If the client already has some pieces of the file, it can send a `bitfield` request to the peer; this request informs the
     peer of the bits that it already has
+    
+Ideally, the moment the client establishes the connection with the peer, it will inform the peer that it is interested and 
+is not choked. Then, begin to request for the pieces of data. Once a piece is received, the client will use the pieces bytes
+from the torrent file to verify if the received piece has a SHA1 hash that is matches the `.torrent` file. Once verified, the
+client can inform the peer that it has the piece via a `have` request. Repeat the request process while the client remains 
+interested and the peer remains unchoked.
 
 ## References
 
