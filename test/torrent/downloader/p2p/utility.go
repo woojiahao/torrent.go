@@ -6,10 +6,12 @@ import (
   "testing"
 )
 
+type testType func(*testing.T, int, MessageID, ...byte)
+
 var block = []byte{25, 69, 112, 187, 115, 1, 0, 255, 199, 100, 1, 0}
 
 // Test with payload of <index><begin><length>
-func testWithPayload(t *testing.T, lengthPrefix int, id MessageID, test func(*testing.T, int, MessageID, ...byte)) {
+func testWithPayload(t *testing.T, lengthPrefix int, id MessageID, test testType) {
   generatePayload := func(index, begin, length int) []byte {
     buf := make([]byte, 0, 12)
     buf = append(buf, ToBigEndian(index, 4)...)
@@ -28,13 +30,13 @@ func testWithPayload(t *testing.T, lengthPrefix int, id MessageID, test func(*te
   }
 }
 
-func testHave(t *testing.T, test func(*testing.T, int, MessageID, ...byte)) {
+func testHave(t *testing.T, test testType) {
   for index := 0; index < 9999; index++ {
     test(t, 5, Have, ToBigEndian(index, 4)...)
   }
 }
 
-func testPiece(t *testing.T, test func(*testing.T, int, MessageID, ...byte)) {
+func testPiece(t *testing.T, test testType) {
   generatePiece := func(index, begin int) []byte {
     buf := make([]byte, 0, 8+len(block))
     buf = append(buf, ToBigEndian(index, 4)...)
@@ -51,7 +53,7 @@ func testPiece(t *testing.T, test func(*testing.T, int, MessageID, ...byte)) {
   }
 }
 
-func testBitfield(t *testing.T, test func(*testing.T, int, MessageID, ...byte)) {
+func testBitfield(t *testing.T, test testType) {
   generateBitfield := func(initial byte, size int) []byte {
     bitfield := make([]byte, size)
     for i := range bitfield {
@@ -68,7 +70,7 @@ func testBitfield(t *testing.T, test func(*testing.T, int, MessageID, ...byte)) 
   }
 }
 
-func testPort(t *testing.T, test func(*testing.T, int, MessageID, ...byte)) {
+func testPort(t *testing.T, test testType) {
   for port1 := 0; port1 < 100; port1++ {
     for port2 := 0; port2 < 100; port2++ {
       test(t, 3, Port, byte(port1), byte(port2))
