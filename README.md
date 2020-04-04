@@ -92,3 +92,4 @@ the system.
 - [ ] Support web seeding
 - [ ] Set up event bus system for when adding CLI 
 - [ ] Add proper logging and error handling to allow for dynamic system
+- [ ] Clean up bencoding code (e.g. place the counter variable in the for loop)
