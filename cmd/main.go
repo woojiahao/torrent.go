@@ -20,12 +20,9 @@ func torrentDownload(filename string) {
 }
 
 func main() {
-  //utility.StrToInt("asdf")
   //torrentDownload("alice-in-wonderland")
   //torrentDownload("um-iso.iso")
   //torrentDownload("aesop-fables")
-  //for {
   //torrentDownload("deb.iso")
-  //}
   torrentDownload("arch")
 }
