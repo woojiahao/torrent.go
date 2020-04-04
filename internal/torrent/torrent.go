@@ -121,6 +121,8 @@ func Download(torrentFilename string) {
   log.Print("parsing torrent metadata into torrent file")
   torrent, _ := parseTorrentFile(torrentMetadata)
 
+  log.Printf("pieces available %d with piece length of %d", len(torrent.getPieces()), torrent.getPieceLength())
+
   info := torrentMetadata["info"].Encode()
 
   log.Print("requesting tracker for information")

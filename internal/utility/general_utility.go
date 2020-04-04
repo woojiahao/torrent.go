@@ -5,6 +5,7 @@ import (
   "encoding/binary"
   "hash"
   "log"
+  "math"
   "math/rand"
   "strconv"
   "unicode"
@@ -84,4 +85,14 @@ func ToBigEndian(value, size int) []byte {
 
 func FromBigEndian(value []byte) int {
   return int(binary.BigEndian.Uint32(value))
+}
+
+// Implementation of math.Pow for int
+func Pow(base, pow int) int {
+  return int(math.Pow(float64(base), float64(pow)))
+}
+
+// Implementation of math.Min for int
+func Min(a, b int) int {
+  return int(math.Min(float64(a), float64(b)))
 }

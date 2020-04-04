@@ -7,23 +7,23 @@ import (
 )
 
 func TestChokeSerialization(t *testing.T) {
-  testSerialization(t, 1, Choke)
+  testSerialization(t, 1, ChokeID)
 }
 
 func TestUnchokeSerialization(t *testing.T) {
-  testSerialization(t, 1, Unchoke)
+  testSerialization(t, 1, UnchokeID)
 }
 
 func TestInterestedSerialization(t *testing.T) {
-  testSerialization(t, 1, Interested)
+  testSerialization(t, 1, InterestedID)
 }
 
 func TestNotInterestedSerialization(t *testing.T) {
-  testSerialization(t, 1, NotInterested)
+  testSerialization(t, 1, NotInterestedID)
 }
 
 func TestHaveSerialization(t *testing.T) {
-  testSerialization(t, 1, NotInterested)
+  testSerialization(t, 1, NotInterestedID)
 }
 
 func TestBitfieldSerialization(t *testing.T) {
@@ -31,7 +31,7 @@ func TestBitfieldSerialization(t *testing.T) {
 }
 
 func TestRequestSerialization(t *testing.T) {
-  testWithPayload(t, 13, Request, testSerialization)
+  testWithPayload(t, 13, RequestID, testSerialization)
 }
 
 func TestPieceSerialization(t *testing.T) {
@@ -39,7 +39,7 @@ func TestPieceSerialization(t *testing.T) {
 }
 
 func TestCancelSerialization(t *testing.T) {
-  testWithPayload(t, 13, Cancel, testSerialization)
+  testWithPayload(t, 13, CancelID, testSerialization)
 }
 
 func TestPortSerialization(t *testing.T) {

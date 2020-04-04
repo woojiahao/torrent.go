@@ -32,7 +32,7 @@ func testWithPayload(t *testing.T, lengthPrefix int, id MessageID, test testType
 
 func testHave(t *testing.T, test testType) {
   for index := 0; index < 9999; index++ {
-    test(t, 5, Have, ToBigEndian(index, 4)...)
+    test(t, 5, HaveID, ToBigEndian(index, 4)...)
   }
 }
 
@@ -48,7 +48,7 @@ func testPiece(t *testing.T, test testType) {
   for index := 1; index < 99; index++ {
     for begin := 1; begin < 99; begin++ {
       piece := generatePiece(index, begin)
-      test(t, 9+len(block), Piece, piece...)
+      test(t, 9+len(block), PieceID, piece...)
     }
   }
 }
@@ -65,7 +65,7 @@ func testBitfield(t *testing.T, test testType) {
   for size := 1; size < 50; size++ {
     for initial := 1; initial < 100; initial++ {
       bitfield := generateBitfield(byte(initial), size)
-      test(t, 1+len(bitfield), Bitfield, bitfield...)
+      test(t, 1+len(bitfield), BitfieldID, bitfield...)
     }
   }
 }
@@ -73,7 +73,7 @@ func testBitfield(t *testing.T, test testType) {
 func testPort(t *testing.T, test testType) {
   for port1 := 0; port1 < 100; port1++ {
     for port2 := 0; port2 < 100; port2++ {
-      test(t, 3, Port, byte(port1), byte(port2))
+      test(t, 3, PortID, byte(port1), byte(port2))
     }
   }
 }
