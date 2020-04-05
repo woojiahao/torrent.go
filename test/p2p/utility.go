@@ -1,17 +1,17 @@
 package p2p
 
 import (
-  . "github.com/woojiahao/torrent.go/internal/p2p"
+  "github.com/woojiahao/torrent.go/internal/message"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "testing"
 )
 
-type testType func(*testing.T, int, MessageID, ...byte)
+type testType func(*testing.T, int, message.MessageID, ...byte)
 
 var block = []byte{25, 69, 112, 187, 115, 1, 0, 255, 199, 100, 1, 0}
 
 // Test with payload of <index><begin><length>
-func testWithPayload(t *testing.T, lengthPrefix int, id MessageID, test testType) {
+func testWithPayload(t *testing.T, lengthPrefix int, id message.MessageID, test testType) {
   generatePayload := func(index, begin, length int) []byte {
     buf := make([]byte, 0, 12)
     buf = append(buf, ToBigEndian(index, 4)...)
@@ -32,7 +32,7 @@ func testWithPayload(t *testing.T, lengthPrefix int, id MessageID, test testType
 
 func testHave(t *testing.T, test testType) {
   for index := 0; index < 9999; index++ {
-    test(t, 5, HaveID, ToBigEndian(index, 4)...)
+    test(t, 5, message.HaveID, ToBigEndian(index, 4)...)
   }
 }
 
@@ -48,7 +48,7 @@ func testPiece(t *testing.T, test testType) {
   for index := 1; index < 99; index++ {
     for begin := 1; begin < 99; begin++ {
       piece := generatePiece(index, begin)
-      test(t, 9+len(block), PieceID, piece...)
+      test(t, 9+len(block), message.PieceID, piece...)
     }
   }
 }
@@ -65,7 +65,7 @@ func testBitfield(t *testing.T, test testType) {
   for size := 1; size < 50; size++ {
     for initial := 1; initial < 100; initial++ {
       bitfield := generateBitfield(byte(initial), size)
-      test(t, 1+len(bitfield), BitfieldID, bitfield...)
+      test(t, 1+len(bitfield), message.BitfieldID, bitfield...)
     }
   }
 }
@@ -73,7 +73,7 @@ func testBitfield(t *testing.T, test testType) {
 func testPort(t *testing.T, test testType) {
   for port1 := 0; port1 < 100; port1++ {
     for port2 := 0; port2 < 100; port2++ {
-      test(t, 3, PortID, byte(port1), byte(port2))
+      test(t, 3, message.PortID, byte(port1), byte(port2))
     }
   }
 }

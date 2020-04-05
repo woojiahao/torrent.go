@@ -1,7 +1,7 @@
 package p2p
 
 import (
-  . "github.com/woojiahao/torrent.go/internal/p2p"
+  "github.com/woojiahao/torrent.go/internal/message"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "testing"
 )
@@ -10,22 +10,22 @@ import (
 
 // Choke 1:0
 func TestChokeDeserialization(t *testing.T) {
-  testDeserialization(t, 1, ChokeID)
+  testDeserialization(t, 1, message.ChokeID)
 }
 
 // Unchoke 1:1
 func TestUnchokeDeserialization(t *testing.T) {
-  testDeserialization(t, 1, UnchokeID)
+  testDeserialization(t, 1, message.UnchokeID)
 }
 
 // Interested 1:2
 func TestInterestedDeserialization(t *testing.T) {
-  testDeserialization(t, 1, InterestedID)
+  testDeserialization(t, 1, message.InterestedID)
 }
 
 // NotInterested 1:3
 func TestNotInterestedDeserialization(t *testing.T) {
-  testDeserialization(t, 1, NotInterestedID)
+  testDeserialization(t, 1, message.NotInterestedID)
 }
 
 // Have 5:4:<piece index>
@@ -40,7 +40,7 @@ func TestBitfieldDeserialization(t *testing.T) {
 
 // Request 13:6:<index><begin><length>
 func TestRequestDeserialization(t *testing.T) {
-  testWithPayload(t, 13, RequestID, testDeserialization)
+  testWithPayload(t, 13, message.RequestID, testDeserialization)
 }
 
 // Piece 9+X:7:<index><begin><block>
@@ -50,7 +50,7 @@ func TestPieceDeserialization(t *testing.T) {
 
 // Cancel 13:8:<index><begin><length>
 func TestCancelDeserialization(t *testing.T) {
-  testWithPayload(t, 13, CancelID, testDeserialization)
+  testWithPayload(t, 13, message.CancelID, testDeserialization)
 }
 
 // Port 3:9:<listen port>
@@ -58,11 +58,11 @@ func TestPortDeserialization(t *testing.T) {
   testPiece(t, testDeserialization)
 }
 
-func buildMessage(lengthPrefix int, id MessageID, payload []byte) *Message {
-  return &Message{lengthPrefix, id, payload}
+func buildMessage(lengthPrefix int, id message.MessageID, payload []byte) *message.Message {
+  return &message.Message{lengthPrefix, id, payload}
 }
 
-func buildMessageBytes(length int, id MessageID, payload []byte) []byte {
+func buildMessageBytes(length int, id message.MessageID, payload []byte) []byte {
   buf := make([]byte, 0)
   lengthPrefix := ToBigEndian(length, 4)
   buf = append(buf, lengthPrefix...)
@@ -71,13 +71,13 @@ func buildMessageBytes(length int, id MessageID, payload []byte) []byte {
   return buf
 }
 
-func testDeserialization(t *testing.T, lengthPrefix int, id MessageID, payload ...byte) {
+func testDeserialization(t *testing.T, lengthPrefix int, id message.MessageID, payload ...byte) {
   expected := buildMessage(lengthPrefix, id, payload)
   mb := buildMessageBytes(lengthPrefix, id, payload)
-  assertDeserialization(t, expected, Deserialize(mb))
+  assertDeserialization(t, expected, message.Deserialize(mb))
 }
 
-func assertDeserialization(t *testing.T, expected, actual *Message) {
+func assertDeserialization(t *testing.T, expected, actual *message.Message) {
   if actual.LengthPrefix != expected.LengthPrefix {
     t.Errorf(
       "deserialization failed - mismatched length prefix; expected %v, got %v",

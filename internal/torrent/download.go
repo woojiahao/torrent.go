@@ -39,5 +39,5 @@ func Download(torrentFilename string) {
   )
 
   log.Print("downloading torrent with tracker information")
-  downloader.Download(peers, torrent, infoHash, peerID)
+  downloader.Download(peers, infoHash, peerID)
 }

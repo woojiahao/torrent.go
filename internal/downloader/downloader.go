@@ -7,11 +7,6 @@ import (
   "log"
 )
 
-type ClientState struct {
-  isChoked     bool
-  isInterested bool
-}
-
 // Establishes a connection with a peer and continues to use the peer to
 // obtain pieces until the peer has opted out of the process
 func connectPeer(address string, h *Handshake) {

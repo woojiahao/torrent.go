@@ -1,4 +1,4 @@
-package p2p
+package message
 
 import (
   . "github.com/woojiahao/torrent.go/internal/utility"

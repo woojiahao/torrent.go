@@ -4,6 +4,7 @@ import (
   "errors"
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/connection"
+  "github.com/woojiahao/torrent.go/internal/message"
 )
 
 const maxBufferSize = 16384
@@ -27,13 +28,13 @@ func StartDownloadWorker(conn *Connection) error {
       // TODO factor in EOF errors and ignore those
       return errors.New(fmt.Sprintf("connection encountered error %s", err.Error()))
     }
-    msg := Deserialize(buf)
+    msg := message.Deserialize(buf)
 
     fmt.Println(msg)
   }
 }
 
 // Read the server's messages
-func readMessage(m *Message) {
+func readMessage(m *message.Message) {
 
 }

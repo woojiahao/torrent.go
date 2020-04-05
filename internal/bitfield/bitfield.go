@@ -1,4 +1,4 @@
-package p2p
+package bitfield
 
 // A bitfield is an array of bytes with each byte
 // Each bit in the bitfield corresponds to a piece index

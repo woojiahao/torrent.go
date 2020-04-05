@@ -1,29 +1,29 @@
 package p2p
 
 import (
-  . "github.com/woojiahao/torrent.go/internal/p2p"
+  "github.com/woojiahao/torrent.go/internal/message"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "testing"
 )
 
 func TestChokeSerialization(t *testing.T) {
-  testSerialization(t, 1, ChokeID)
+  testSerialization(t, 1, message.ChokeID)
 }
 
 func TestUnchokeSerialization(t *testing.T) {
-  testSerialization(t, 1, UnchokeID)
+  testSerialization(t, 1, message.UnchokeID)
 }
 
 func TestInterestedSerialization(t *testing.T) {
-  testSerialization(t, 1, InterestedID)
+  testSerialization(t, 1, message.InterestedID)
 }
 
 func TestNotInterestedSerialization(t *testing.T) {
-  testSerialization(t, 1, NotInterestedID)
+  testSerialization(t, 1, message.NotInterestedID)
 }
 
 func TestHaveSerialization(t *testing.T) {
-  testSerialization(t, 1, NotInterestedID)
+  testSerialization(t, 1, message.NotInterestedID)
 }
 
 func TestBitfieldSerialization(t *testing.T) {
@@ -31,7 +31,7 @@ func TestBitfieldSerialization(t *testing.T) {
 }
 
 func TestRequestSerialization(t *testing.T) {
-  testWithPayload(t, 13, RequestID, testSerialization)
+  testWithPayload(t, 13, message.RequestID, testSerialization)
 }
 
 func TestPieceSerialization(t *testing.T) {
@@ -39,20 +39,20 @@ func TestPieceSerialization(t *testing.T) {
 }
 
 func TestCancelSerialization(t *testing.T) {
-  testWithPayload(t, 13, CancelID, testSerialization)
+  testWithPayload(t, 13, message.CancelID, testSerialization)
 }
 
 func TestPortSerialization(t *testing.T) {
   testPort(t, testSerialization)
 }
 
-func testSerialization(t *testing.T, length int, id MessageID, payload ...byte) {
+func testSerialization(t *testing.T, length int, id message.MessageID, payload ...byte) {
   expected := make([]byte, 0)
   expected = append(expected, ToBigEndian(length, 4)...)
   expected = append(expected, byte(int(id)))
   expected = append(expected, payload...)
 
-  m := Message{
+  m := message.Message{
     LengthPrefix: length,
     MessageID:    id,
     Payload:      payload,

@@ -1,7 +1,7 @@
 package p2p
 
 import (
-  . "github.com/woojiahao/torrent.go/internal/p2p"
+  "github.com/woojiahao/torrent.go/internal/bitfield"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "testing"
 )
@@ -28,7 +28,7 @@ func TestBitfieldHasPiece(t *testing.T) {
 }
 
 // Generates a bitfield based on the number of bits to be filled
-func generateBitfield(filledBits int) Bitfield {
+func generateBitfield(filledBits int) bitfield.Bitfield {
   generateByte := func(bits int) byte {
     b := 0
     for i := 7; i >= 8-bits; i-- {
