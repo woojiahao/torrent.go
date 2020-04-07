@@ -105,11 +105,3 @@ func ToDict(t TType) TDict {
 func (t TDict) Value() map[string]TType {
   return t
 }
-
-func (t TDict) String() string {
-  data := make([]string, 0)
-  for k, v := range t {
-    data = append(data, fmt.Sprintf("%s: %s", k, v))
-  }
-  return strings.Join(data, "\n")
-}
