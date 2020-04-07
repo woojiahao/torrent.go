@@ -37,10 +37,11 @@ func decode(input string) (result TType, jump int, err error) {
 
 func decodeTString(input string) (result TString, jump int, err error) {
   delimiterPos := strings.Index(input, ":")
-  if length, err := strconv.Atoi(input[:delimiterPos]); err != nil {
+  if length, e := strconv.Atoi(input[:delimiterPos]); e != nil {
+    err = e
     return
   } else {
-    jump := length + delimiterPos + 1
+    jump = length + delimiterPos + 1
     result = TString(input[delimiterPos+1 : jump])
     return
   }
@@ -48,7 +49,8 @@ func decodeTString(input string) (result TString, jump int, err error) {
 
 func decodeTInt(input string) (result TInt, jump int, err error) {
   delimiterPos := strings.Index(input, string(endSymbol))
-  if i, err := strconv.Atoi(input[1:delimiterPos]); err != nil {
+  if i, e := strconv.Atoi(input[1:delimiterPos]); e != nil {
+    err = e
     return
   } else {
     result = TInt(i)
