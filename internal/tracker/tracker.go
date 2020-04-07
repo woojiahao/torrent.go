@@ -37,7 +37,7 @@ func generatePeerID() string {
     case 1:
       peerID[i] = string(RandomChar())
     default:
-      LogCheck(errors.New("invalid randomly generated integer"))
+      Check(errors.New("invalid randomly generated integer"))
     }
   }
 
@@ -55,7 +55,7 @@ func generateInfoHash(info string) string {
 func parsePeersBinary(peersBinary string) []Peer {
   const peerSize = 6
   if len(peersBinary)%peerSize != 0 {
-    LogCheck(errors.New(fmt.Sprintf("invalid peers string; length must be a multiple of %d", peerSize)))
+    Check(errors.New(fmt.Sprintf("invalid peers string; length must be a multiple of %d", peerSize)))
   }
 
   peers := make([]Peer, 0)
@@ -137,11 +137,11 @@ func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string
   }
 
   if resp == nil {
-    LogCheck(errors.New("cannot connect to tracker; unable to get response from announce url"))
+    Check(errors.New("cannot connect to tracker; unable to get response from announce url"))
   }
 
   body, err := ioutil.ReadAll(resp.Body)
-  LogCheck(err)
+  Check(err)
 
   log.Print("decoding tracker response metadata")
   trackerResponseMetadata := ToDict(Decode(string(body)))
@@ -150,9 +150,9 @@ func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string
   trackerResponse := parseTrackerResponse(trackerResponseMetadata)
 
   if trackerResponse.failureReason != "" {
-    LogCheck(errors.New(fmt.Sprintf("tracker failed with reason %s", trackerResponse.failureReason)))
+    Check(errors.New(fmt.Sprintf("tracker failed with reason %s", trackerResponse.failureReason)))
   } else if len(trackerResponse.peers) == 0 {
-    LogCheck(errors.New("no peers were provided by the tracker"))
+    Check(errors.New("no peers were provided by the tracker"))
   }
 
   return trackerResponse.peers, infoHash, peerID

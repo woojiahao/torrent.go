@@ -7,27 +7,12 @@ import (
   "log"
   "math"
   "math/rand"
-  "strconv"
 )
 
-// Checks if an error is non-nil; if non-nil, panic with the error; else ignore
 func Check(err error) {
-  if err != nil {
-    panic(err)
-  }
-}
-
-func LogCheck(err error) {
   if err != nil {
     log.Fatal(err.Error())
   }
-}
-
-// Converts a string to an integer
-func StrToInt(in string) int {
-  val, err := strconv.Atoi(in)
-  LogCheck(err)
-  return val
 }
 
 // Generates a random integer from min (inclusive) to max (exclusive)

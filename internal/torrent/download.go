@@ -15,11 +15,11 @@ func Download(torrentFilename string) {
   log.Printf("starting torrent download")
 
   if NotExist(torrentFilename) {
-    LogCheck(&fileError{torrentFilename, "does not exist"})
+    Check(&fileError{torrentFilename, "does not exist"})
   } else if IsDir(torrentFilename) {
-    LogCheck(&fileError{torrentFilename, "points to a directory"})
+    Check(&fileError{torrentFilename, "points to a directory"})
   } else if !IsFileType(torrentFilename, "torrent") {
-    LogCheck(&fileError{torrentFilename, "is not a .torrent file"})
+    Check(&fileError{torrentFilename, "is not a .torrent file"})
   }
 
   log.Print("downloading torrent file contents")

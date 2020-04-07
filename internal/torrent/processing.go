@@ -13,7 +13,7 @@ func createPieces(piecesStr string) Pieces {
   pieces := make([][pieceSize]byte, 0)
 
   if len(piecesStr)%pieceSize != 0 {
-    LogCheck(errors.New(fmt.Sprintf("invalid pieces format; not a multiple of %d", pieceSize)))
+    Check(errors.New(fmt.Sprintf("invalid pieces format; not a multiple of %d", pieceSize)))
   }
 
   for i := 0; i < len(piecesStr)/pieceSize; i += pieceSize {

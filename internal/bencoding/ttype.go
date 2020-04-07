@@ -2,7 +2,6 @@ package bencoding
 
 import (
   "fmt"
-  . "github.com/woojiahao/torrent.go/internal/utility"
   "strings"
 )
 
@@ -17,10 +16,12 @@ type (
   TDict   map[string]TType
 )
 
-func toTypeStatusCheck(ok bool, t string) {
+func toTypeStatusCheck(ok bool, t string) error {
   if !ok {
-    LogCheck(&typeConversionError{t})
+    return &typeConversionError{t}
   }
+
+  return nil
 }
 
 func (t TString) Encode() string {
