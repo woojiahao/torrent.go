@@ -14,6 +14,7 @@ import (
   "time"
 )
 
+// TODO See if this is even required or can we remove this?
 type Response struct {
   failureReason  string
   warningMessage string
@@ -53,8 +54,8 @@ func parsePeersBinary(peersBinary string) []Peer {
   for i := 0; i < len(peersBinary)/peerSize; i += peerSize {
     ip, port := peersBinary[i:i+4], peersBinary[i+4:i+6]
     peer := Peer{
-      net.IP(ip).String(),
-      int(binary.BigEndian.Uint16([]byte(port))),
+      net.IP(ip),
+      binary.BigEndian.Uint16([]byte(port)),
     }
     peers = append(peers, peer)
   }

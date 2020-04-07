@@ -6,10 +6,10 @@ import (
 )
 
 type Peer struct {
-  ip   string
-  port int
+  ip   net.IP
+  port uint16
 }
 
 func (p *Peer) Address() string {
-  return net.JoinHostPort(p.ip, strconv.Itoa(p.port))
+  return net.JoinHostPort(p.ip.String(), strconv.Itoa(int(p.port)))
 }
