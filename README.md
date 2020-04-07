@@ -106,14 +106,14 @@ interested and the peer remains unchoked.
 
 ## TODO 
 
-- [ ] Set the valid parsing of the bencoding to use defers to catch the appropriate panics
-- [ ] Add data validation for bencoding decoding
+- [X] ~~Set the valid parsing of the bencoding to use defers to catch the appropriate panics~~
+- [X] Add data validation for bencoding decoding
 - [X] Add encoding to bencoding format
 - [ ] Update test suite and any other location where "parse" is used instead of decode
 - [ ] Retry downloading if the original torrent failed
 - [ ] Support web seeding
 - [ ] Set up event bus system for when adding CLI 
 - [ ] Add proper logging and error handling to allow for dynamic system
-- [ ] Clean up bencoding code (e.g. place the counter variable in the for loop)
-- [ ] Flatten out the folder structure to allow the torrent related files to be split out respectively
+- [X] Clean up bencoding code (e.g. place the counter variable in the for loop)
+- [X] Flatten out the folder structure to allow the torrent related files to be split out respectively
 - [ ] Use `select{}` with `time.After` to toggle a retry mechanism for server retries
