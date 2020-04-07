@@ -2,16 +2,14 @@ package bencoding
 
 import (
   "fmt"
-  "log"
+  . "github.com/woojiahao/torrent.go/internal/utility"
   "strconv"
   "strings"
 )
 
 func Decode(input string) TType {
   result, _, err := decode(input)
-  if err != nil {
-    log.Fatal(err.Error())
-  }
+  Check(err)
   return result
 }
 

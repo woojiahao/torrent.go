@@ -2,6 +2,7 @@ package bencoding
 
 import (
   "fmt"
+  . "github.com/woojiahao/torrent.go/internal/utility"
   "strings"
 )
 
@@ -16,14 +17,6 @@ type (
   TDict   map[string]TType
 )
 
-func toTypeStatusCheck(ok bool, t string) error {
-  if !ok {
-    return &typeConversionError{t}
-  }
-
-  return nil
-}
-
 func (t TString) Encode() string {
   value := string(t)
   return fmt.Sprintf("%d:%s", len(value), value)
@@ -33,8 +26,10 @@ func ToString(t TType) TString {
   if t == nil {
     return ""
   }
+
   tString, ok := t.(TString)
-  toTypeStatusCheck(ok, "TString")
+  Check(toTypeStatusCheck(ok, "TString"))
+
   return tString
 }
 
@@ -44,15 +39,17 @@ func (t TString) Value() string {
 
 func (t TInt) Encode() string {
   value := int(t)
-  return fmt.Sprintf("i%de", value)
+  return fmt.Sprintf("%s%d%s", intSymbol, value, endSymbol)
 }
 
 func ToInt(t TType) TInt {
   if t == nil {
     return 0
   }
+
   tInt, ok := t.(TInt)
-  toTypeStatusCheck(ok, "TInt")
+  Check(toTypeStatusCheck(ok, "TInt"))
+
   return tInt
 }
 
@@ -62,20 +59,21 @@ func (t TInt) Value() int {
 
 func (t TList) Encode() string {
   values := make([]string, 0)
-  values = append(values, "l")
   for _, i := range t {
     values = append(values, i.Encode())
   }
-  values = append(values, "e")
-  return strings.Join(values, "")
+
+  return fmt.Sprintf("%s%s%s", listSymbol, strings.Join(values, ""), endSymbol)
 }
 
 func ToList(t TType) TList {
   if t == nil {
     return nil
   }
+
   tList, ok := t.(TList)
-  toTypeStatusCheck(ok, "TList")
+  Check(toTypeStatusCheck(ok, "TList"))
+
   return tList
 }
 
@@ -85,23 +83,32 @@ func (t TList) Value() []TType {
 
 func (t TDict) Encode() string {
   values := make([]string, 0)
-  values = append(values, "d")
   for key, value := range t {
     values = append(values, fmt.Sprintf("%s%s", TString(key).Encode(), value.Encode()))
   }
-  values = append(values, "e")
-  return strings.Join(values, "")
+
+  return fmt.Sprintf("%s%s%s", dictSymbol, strings.Join(values, ""), endSymbol)
 }
 
 func ToDict(t TType) TDict {
   if t == nil {
     return nil
   }
+
   tDict, ok := t.(TDict)
-  toTypeStatusCheck(ok, "TDict")
+  Check(toTypeStatusCheck(ok, "TDict"))
+
   return tDict
 }
 
 func (t TDict) Value() map[string]TType {
   return t
+}
+
+func toTypeStatusCheck(ok bool, t string) error {
+  if !ok {
+    return &typeConversionError{t}
+  }
+
+  return nil
 }
