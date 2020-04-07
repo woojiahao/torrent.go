@@ -7,7 +7,6 @@ import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
-  "log"
   "net"
   "net/http"
   "strconv"
@@ -42,14 +41,6 @@ func generatePeerID() string {
   }
 
   return strings.Join(peerID, "")
-}
-
-// The info_hash is the SHA1 hash representation of the bencoding info portion of the metadata
-// The SHA1 hash generated is 40 characters long for human reading, it is in fact a hex string
-// The tracker must receive the URL-encoded version of the hex string
-func generateInfoHash(info string) string {
-  h := GenerateSHA1Hash(info)
-  return string(h.Sum(nil))
 }
 
 func parsePeersBinary(peersBinary string) []Peer {
@@ -114,7 +105,7 @@ func queryTracker(trackerURL, infoHash, peerID string, length int) *http.Respons
 // TODO Add support for UDP connections
 // Requests information from the given tracker
 func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string) {
-  infoHash := generateInfoHash(info)
+  infoHash := string(GenerateSHA1Hash(info).Sum(nil))
   var peerID string
   var resp *http.Response
   defer func() {
@@ -127,7 +118,6 @@ func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string
   // in case the servers don't respond to rapid successions of queries
   retry := 0
   for resp == nil && retry < 3 {
-    log.Print("tracker query try ", retry)
     if retry != 0 {
       time.Sleep(ToSeconds(5))
     }
@@ -143,10 +133,8 @@ func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string
   body, err := ioutil.ReadAll(resp.Body)
   Check(err)
 
-  log.Print("decoding tracker response metadata")
   trackerResponseMetadata := ToDict(Decode(string(body)))
 
-  log.Print("parsing tracker response metadata into Response")
   trackerResponse := parseTrackerResponse(trackerResponseMetadata)
 
   if trackerResponse.failureReason != "" {

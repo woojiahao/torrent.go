@@ -34,6 +34,9 @@ func RandomChar() byte {
 }
 
 // Generate a SHA1 Hash for a given string input
+// The info_hash is the SHA1 hash representation of the bencoding info portion of the metadata
+// The SHA1 hash generated is 40 characters long for human reading, it is in fact a hex string
+// The tracker must receive the URL-encoded version of the hex string
 func GenerateSHA1Hash(input string) hash.Hash {
   h := sha1.New()
   h.Write([]byte(input))
