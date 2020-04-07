@@ -116,3 +116,4 @@ interested and the peer remains unchoked.
 - [ ] Add proper logging and error handling to allow for dynamic system
 - [ ] Clean up bencoding code (e.g. place the counter variable in the for loop)
 - [ ] Flatten out the folder structure to allow the torrent related files to be split out respectively
+- [ ] Use `select{}` with `time.After` to toggle a retry mechanism for server retries
