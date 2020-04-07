@@ -1,4 +1,4 @@
-package p2p
+package bitfield
 
 import (
   "github.com/woojiahao/torrent.go/internal/bitfield"
@@ -8,10 +8,10 @@ import (
 
 func TestBitfieldHasPiece(t *testing.T) {
   for i := 1; i < 999; i++ {
-    bitfield := generateBitfield(i)
-    first := bitfield.HasPiece(0)
-    middle := bitfield.HasPiece(i / 2)
-    oneAfterLast := bitfield.HasPiece(i+1)
+    bf := generateBitfield(i)
+    first := bf.HasPiece(0)
+    middle := bf.HasPiece(i / 2)
+    oneAfterLast := bf.HasPiece(i+1)
 
     if !first {
       t.Errorf("first should always be true")
