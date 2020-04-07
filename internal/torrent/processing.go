@@ -7,24 +7,6 @@ import (
   . "github.com/woojiahao/torrent.go/internal/utility"
 )
 
-// Generate the pieces of a torrent file
-func createPieces(piecesStr string) Pieces {
-  const pieceSize = 20
-  pieces := make([][pieceSize]byte, 0)
-
-  if len(piecesStr)%pieceSize != 0 {
-    Check(errors.New(fmt.Sprintf("invalid pieces format; not a multiple of %d", pieceSize)))
-  }
-
-  for i := 0; i < len(piecesStr)/pieceSize; i += pieceSize {
-    byteSlice := []byte(piecesStr[i : i+pieceSize])
-    var byteChunk [pieceSize]byte
-    copy(byteChunk[:], byteSlice[:pieceSize])
-    pieces = append(pieces, byteChunk)
-  }
-
-  return pieces
-}
 
 // Create the files list for multi file torrents
 func parseFiles(filesLst TList) []file {
