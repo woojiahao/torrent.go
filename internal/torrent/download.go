@@ -5,27 +5,30 @@ import (
   "github.com/woojiahao/torrent.go/internal/downloader"
   "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
-  "log"
+  "io/ioutil"
+  "os"
+  "path/filepath"
 )
 
 // Parses a torrent file into either a single file torrent or multi file torrent
 func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
-  announce, info := ToString(torrentMetadata["announce"]).Value(),
-    ToDict(torrentMetadata["info"])
+  announce, info := ToString(torrentMetadata[announce]).Value(),
+    ToDict(torrentMetadata[info])
 
-  isSingle := info["files"] == nil
 
-  name, pieceLength, pieces := ToString(info["name"]).Value(),
-    ToInt(info["piece length"]).Value(),
-    createPieces(ToString(info["pieces"]).Value())
+  name, pieceLength, pieces := ToString(info[name]).Value(),
+    ToInt(info[pieceLength]).Value(),
+    createPieces(ToString(info[pieces]).Value())
 
   var torrent Torrent
+
+  isSingle := info["files"] == nil
 
   if isSingle {
     torrent = singleFileTorrent{
       announce,
       singleFileInfo{
-        length:      ToInt(info["length"]).Value(),
+        length:      ToInt(info[length]).Value(),
         name:        name,
         pieceLength: pieceLength,
         Pieces:      pieces,
@@ -35,7 +38,7 @@ func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
     torrent = multiFileTorrent{
       announce,
       multiFileInfo{
-        files:       parseFiles(ToList(info["files"])),
+        files:       parseFiles(ToList(info[files])),
         name:        name,
         pieceLength: pieceLength,
         Pieces:      pieces,
@@ -48,33 +51,39 @@ func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
 // TODO Retry the download if the original returns a failure
 // Downloads a torrent from the given file path
 func Download(torrentFilename string) {
+  validateTorrentFilename(torrentFilename)
 
-  log.Printf("starting torrent download")
+  fileContents := readFileContents(torrentFilename)
 
-  if NotExist(torrentFilename) {
-    Check(&fileError{torrentFilename, "does not exist"})
-  } else if IsDir(torrentFilename) {
-    Check(&fileError{torrentFilename, "points to a directory"})
-  } else if !IsFileType(torrentFilename, "torrent") {
-    Check(&fileError{torrentFilename, "is not a .torrent file"})
-  }
-
-  log.Print("downloading torrent file contents")
-  fileContents := ReadFileContents(torrentFilename)
-
-  log.Print("decoding torrent metadata")
   torrentMetadata := ToDict(Decode(fileContents))
 
-  log.Print("parsing torrent metadata into torrent file")
   torrent, _ := parseTorrentFile(torrentMetadata)
 
-  log.Print("requesting tracker for information")
   peers, infoHash, peerID := tracker.RequestTracker(
     torrent.GetAnnounce(),
-    torrentMetadata["info"].Encode(),
+    torrentMetadata[info].Encode(),
     torrent.GetLength(),
   )
 
-  log.Print("downloading torrent with tracker information")
   downloader.Download(peers, infoHash, peerID)
+}
+
+func validateTorrentFilename(filename string) {
+  file, err := os.Stat(filename)
+
+  if os.IsNotExist(err) {
+    err = &fileError{filename, "does not exist"}
+  } else if file.IsDir() {
+    err = &fileError{filename, "points to a directory"}
+  } else if filepath.Ext(filename) != ".torrent" {
+    err = &fileError{filename, "is not a .torrent file"}
+  }
+
+  Check(err)
+}
+
+func readFileContents(filename string) string {
+  data, err := ioutil.ReadFile(filename)
+  Check(err)
+  return string(data)
 }
