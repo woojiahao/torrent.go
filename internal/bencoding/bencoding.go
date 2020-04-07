@@ -4,7 +4,33 @@ import (
   "fmt"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "strings"
+  "unicode"
 )
+
+type symbol string
+
+const (
+  dictSymbol symbol = "d"
+  intSymbol  symbol = "i"
+  listSymbol symbol = "l"
+  endSymbol  symbol = "e"
+)
+
+var startSymbols = []symbol{dictSymbol, intSymbol, listSymbol}
+
+func (s symbol) isDigit() bool {
+  return unicode.IsDigit([]rune(s)[0])
+}
+
+func (s symbol) isStartSymbol() bool {
+  for _, sym := range startSymbols {
+    if s == sym {
+      return true
+    }
+  }
+
+  return false
+}
 
 func Decode(input string) TType {
   result, _, err := decode(input)
@@ -13,16 +39,17 @@ func Decode(input string) TType {
 }
 
 func decode(input string) (result TType, jump int, err error) {
-  cur := string(input[0])
-  if IsDigit(cur) {
+  cur := symbol(input[0])
+
+  if cur.isDigit() {
     result, jump = decodeTString(input)
-  } else if IsStrInRange(cur, "d", "i", "l") {
+  } else if cur.isStartSymbol() {
     switch cur {
-    case "d":
+    case dictSymbol:
       result, jump = decodeTDict(input)
-    case "i":
+    case intSymbol:
       result, jump = decodeTInt(input)
-    case "l":
+    case listSymbol:
       result, jump = decodeTList(input)
     }
   } else {
