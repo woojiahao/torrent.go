@@ -2,8 +2,10 @@ package connection
 
 import (
   "errors"
-  . "github.com/woojiahao/torrent.go/internal/utility"
+  "github.com/woojiahao/torrent.go/internal/message"
+  "io/ioutil"
   "net"
+  "time"
 )
 
 type Connection struct {
@@ -14,7 +16,7 @@ type Connection struct {
 // Establishes a TCP connection with a given IP address.
 // The connection will timeout after a given amount of seconds.
 func TCP(address string, timeout int) (*Connection, error) {
-  c, err := net.DialTimeout("tcp", address, ToSeconds(timeout))
+  c, err := net.DialTimeout("tcp", address, time.Duration(timeout)*time.Second)
   return &Connection{address, c}, err
 }
 
@@ -29,8 +31,12 @@ func (c *Connection) Send(data []byte) error {
 }
 
 // Read from a TCP connection
-func (c *Connection) Receive(bufSize int) ([]byte, error) {
-  buf := make([]byte, bufSize)
-  _, err := c.Conn.Read(buf)
-  return buf, err
+func (c *Connection) Receive() (*message.Message, error) {
+  m, err := ioutil.ReadAll(c.Conn)
+  if err != nil {
+    return nil, err
+  }
+
+  msg := message.Deserialize(m)
+  return msg, nil
 }

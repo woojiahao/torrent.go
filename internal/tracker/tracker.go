@@ -115,16 +115,14 @@ func RequestTracker(trackerURL, info string, length int) ([]Peer, string, string
     }
   }()
 
-  // When retrying to make a connection, we will pause the execution for 5 seconds
-  // in case the servers don't respond to rapid successions of queries
-  retry := 0
-  for resp == nil && retry < 3 {
-    if retry != 0 {
-      time.Sleep(ToSeconds(5))
+  try := 0
+  for resp == nil && try < 3 {
+    if try != 0 {
+      time.Sleep(10 * time.Second)
     }
     peerID = generatePeerID()
     resp = queryTracker(trackerURL, infoHash, peerID, length)
-    retry++
+    try++
   }
 
   if resp == nil {
