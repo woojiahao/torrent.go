@@ -30,7 +30,11 @@ func (t multiFileTorrentFile) GetAnnounce() string {
 }
 
 func (t multiFileTorrentFile) GetLength() int {
-  return 0
+  length := 0
+  for _, file := range t.info.files {
+    length += file.length
+  }
+  return length
 }
 
 func (t multiFileTorrentFile) GetPieces() Pieces {
