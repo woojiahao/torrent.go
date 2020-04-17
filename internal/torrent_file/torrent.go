@@ -1,7 +1,7 @@
-package torrent
+package torrent_file
 
 type (
-  Torrent interface {
+  TorrentFile interface {
     GetAnnounce() string
     GetLength() int
     GetPieces() Pieces

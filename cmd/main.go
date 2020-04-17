@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-  "github.com/woojiahao/torrent.go/internal/torrent"
+  "github.com/woojiahao/torrent.go/internal/torrent_file"
 )
 
 func bencodingTest() {

@@ -1,4 +1,4 @@
-package torrent
+package torrent_file
 
 import (
   "errors"

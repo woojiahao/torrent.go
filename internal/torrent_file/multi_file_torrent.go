@@ -1,4 +1,4 @@
-package torrent
+package torrent_file
 
 import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
@@ -7,7 +7,7 @@ import (
 
 // Multi file torrent structures
 type (
-  multiFileTorrent struct {
+  multiFileTorrentFile struct {
     announce string
     info     multiFileInfo
   }
@@ -25,19 +25,19 @@ type (
   }
 )
 
-func (t multiFileTorrent) GetAnnounce() string {
+func (t multiFileTorrentFile) GetAnnounce() string {
   return t.announce
 }
 
-func (t multiFileTorrent) GetLength() int {
+func (t multiFileTorrentFile) GetLength() int {
   return 0
 }
 
-func (t multiFileTorrent) GetPieces() Pieces {
+func (t multiFileTorrentFile) GetPieces() Pieces {
   return t.info.Pieces
 }
 
-func (t multiFileTorrent) GetPieceLength() int {
+func (t multiFileTorrentFile) GetPieceLength() int {
   return t.info.pieceLength
 }
 

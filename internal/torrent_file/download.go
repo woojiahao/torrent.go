@@ -1,4 +1,4 @@
-package torrent
+package torrent_file
 
 import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
@@ -6,6 +6,7 @@ import (
   "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
+  "log"
   "os"
   "path/filepath"
 )
@@ -31,7 +32,7 @@ func readFileContents(filename string) string {
 }
 
 // Parses a torrent file into either a single file torrent or multi file torrent
-func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
+func parseTorrentFile(torrentMetadata TDict) (TorrentFile, bool) {
   announce, info := ToString(torrentMetadata[announce]).Value(),
     ToDict(torrentMetadata[info])
 
@@ -39,12 +40,12 @@ func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
     ToInt(info[pieceLength]).Value(),
     createPieces(ToString(info[pieces]).Value())
 
-  var torrent Torrent
+  var torrent TorrentFile
 
   isSingle := info["files"] == nil
 
   if isSingle {
-    torrent = singleFileTorrent{
+    torrent = singleFileTorrentFile{
       announce,
       singleFileInfo{
         length:      ToInt(info[length]).Value(),
@@ -54,7 +55,7 @@ func parseTorrentFile(torrentMetadata TDict) (Torrent, bool) {
       },
     }
   } else {
-    torrent = multiFileTorrent{
+    torrent = multiFileTorrentFile{
       announce,
       multiFileInfo{
         files:       parseFiles(ToList(info[files])),
@@ -85,17 +86,16 @@ func Download(torrentFilename string) {
   )
 
   // TODO Downloading should return a byte buffer
-  attemptPeerConnections(peers, infoHash, peerID)
+  connectPeers(peers, infoHash, peerID)
 }
 
-func attemptPeerConnections(peers []tracker.Peer, infoHash, peerID string) {
+func connectPeers(peers []tracker.Peer, infoHash, peerID string) {
   for _, peer := range peers {
-    c := client.New(peer, infoHash, peerID)
-    if c == nil {
+    c, err := client.New(peer, infoHash, peerID)
+    if err != nil {
+      log.Println(err.Error())
       continue
     }
-
-    c.
   }
 }
 
