@@ -30,7 +30,7 @@ func receiveBitfield(conn *Connection) (Bitfield, error) {
   }
 
   if msg.MessageID != message.BitfieldID {
-    return nil, errors.New("invalid message type, peer must provide bitfield to provide client with available pieces")
+    return nil, fmt.Errorf("invalid message type %d, peer must provide bitfield to provide client with available pieces", msg.MessageID)
   }
 
   return msg.Payload, nil
@@ -88,7 +88,9 @@ func (c *Client) SendRequest(index, begin, length int) error {
   payload = append(payload, ToBigEndian(index, 4)...)
   payload = append(payload, ToBigEndian(begin, 4)...)
   payload = append(payload, ToBigEndian(length, 4)...)
+  fmt.Printf("request to download file %v\n", payload)
   request := message.New(message.RequestID, payload...)
+  fmt.Printf("request message is %v\n", request)
   err := c.Conn.Send(request.Serialize())
   return err
 }

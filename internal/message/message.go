@@ -59,7 +59,7 @@ func (m *Message) Serialize() []byte {
   lengthPrefix := ToBigEndian(length, 4)
 
   buf = append(buf, lengthPrefix...)
-  buf = append(buf, byte(int(m.MessageID)))
+  buf = append(buf, byte(int(messageID)))
   if m.Payload != nil {
     buf = append(buf, m.Payload...)
   }
@@ -79,7 +79,7 @@ func Deserialize(b []byte) *Message {
     return nil
   }
 
-  messageID := MessageID(int(b[4]))
+  messageID := MessageID(b[4])
 
   var payloadSize int
   if messageID == PieceID || messageID == BitfieldID {
@@ -117,9 +117,12 @@ func Read(c *connection.Connection) (*Message, error) {
     return nil, err
   }
 
+  fmt.Printf("buffer received is %d\n", buf)
+
   fullMessage := make([]byte, length+4)
   copy(fullMessage[:4], lengthBuf)
-  copy(fullMessage[4:], buf)
+  copy(fullMessage[4:5], []byte{buf[0]})
+  copy(fullMessage[5:], buf[1:])
 
   return Deserialize(fullMessage), nil
 }

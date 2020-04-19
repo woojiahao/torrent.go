@@ -17,7 +17,7 @@ const maxBlockSize = 16384
 
 // Backlog is used to ensure that we do not keep making requests for block while the existing block
 // might already be processing
-const maxBacklog = 5
+const maxBacklog = 1
 
 type Torrent struct {
   Peers       []tracker.Peer
@@ -68,6 +68,8 @@ func (p *pieceProgress) read() error {
   if msg == nil {
     return nil
   }
+
+  log.Printf("message id is %d\n", msg.MessageID)
 
   switch msg.MessageID {
   case message.ChokeID:
@@ -247,7 +249,7 @@ func (t *Torrent) Download() []byte {
 
   // Begin downloading the pieces
   for _, peer := range t.Peers {
-    t.startPeerDownload(peer, workQueue, results)
+    go t.startPeerDownload(peer, workQueue, results)
   }
 
   // As we begin receiving pieces, we can start to add them to a larger buffer
