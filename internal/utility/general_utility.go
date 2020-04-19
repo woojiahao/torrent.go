@@ -7,49 +7,12 @@ import (
   "log"
   "math"
   "math/rand"
-  "strconv"
-  "unicode"
 )
 
-// Checks if an error is non-nil; if non-nil, panic with the error; else ignore
 func Check(err error) {
-  if err != nil {
-    panic(err)
-  }
-}
-
-func LogCheck(err error) {
   if err != nil {
     log.Fatal(err.Error())
   }
-}
-
-// Converts a string to an integer
-func StrToInt(in string) int {
-  val, err := strconv.Atoi(in)
-  LogCheck(err)
-  return val
-}
-
-// Converts a string to a rune
-func StrToRune(in string) rune {
-  return []rune(in)[0]
-}
-
-// Check if a string is a digit
-func IsDigit(in string) bool {
-  return unicode.IsDigit(StrToRune(in))
-}
-
-// Check if a string is within the range of specified strings
-func IsStrInRange(in string, ch ...string) bool {
-  for _, c := range ch {
-    if c == in {
-      return true
-    }
-  }
-
-  return false
 }
 
 // Generates a random integer from min (inclusive) to max (exclusive)
@@ -71,6 +34,9 @@ func RandomChar() byte {
 }
 
 // Generate a SHA1 Hash for a given string input
+// The info_hash is the SHA1 hash representation of the bencoding info portion of the metadata
+// The SHA1 hash generated is 40 characters long for human reading, it is in fact a hex string
+// The tracker must receive the URL-encoded version of the hex string
 func GenerateSHA1Hash(input string) hash.Hash {
   h := sha1.New()
   h.Write([]byte(input))

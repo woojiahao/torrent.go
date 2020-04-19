@@ -84,6 +84,62 @@ from the torrent file to verify if the received piece has a SHA1 hash that is ma
 client can inform the peer that it has the piece via a `have` request. Repeat the request process while the client remains 
 interested and the peer remains unchoked.
 
+### Post-investigation
+
+After some investigation and grokking, I had come to the realisation that the original idea of how peers communicated was naive.
+I will be focusing on the P2P aspect of the communication, assuming the handshake and connection has already been established.
+
+To split the pieces, we need to think of it as such. A file is split into pieces. We know the order of these pieces because we 
+have the metainfo of the torrent file. This gives us two pieces of information - piece position and SHA1 hash. We can also deduce
+how long the piece will be as the metainfo announces to us the `piece length`. We know that we have to query each piece individually,
+so we want to split this pieces array out and create a piece of work to perform. This piece of work will contain the index of the 
+piece in the file, the hash of the piece, and the length of it. The reason why we need to add the length is because the last piece in
+the file might be slightly less than the others. So it's best to include it. 
+
+Then we know that each piece is split into blocks. According to the documentation, current implementations of block sizes usually
+have the size to be 16kiB. This also means that we have to keep track of which blocks we receive. This is easier because we can do 
+this sequentially. To track the piece progress, we need several things, we need the piece we are tracking - or the index of the 
+piece, the current client connection, how much is downloaded, the data that is downloaded, and finally what we are requesting. To
+keep track of what we have downloaded, we continually request for blocks with the fixed block size. As we are downloading these 
+bytes, we will add to the downloaded section. Ideally, by the end of the download, the downloaded should be the same length as the
+piece length. The requsted size is the same as the downloaded size and we must increment both. The only difference is that the 
+requested size increases after each `REQUEST` while the downloaded size increases after each confirmed `PIECE`.
+
+Once we download the entire piece, we then check the piece against the SHA1 hash. Once validated, we can send a `HAVE` to the peer
+to confirm the download.
+
+```go
+package pieces
+
+type pieceWork struct {
+  index  int
+  hash   [20]byte
+  length int
+}
+```
+
+
+To implement the logic in goroutines, we fill up a channel with the pieces we want to retrieve. Then, we have another channel to
+receive the downloaded pieces. For the work queue, we can actually just iterate over the channel until it is empty. For the 
+downloaded pieces, we need the index of the piece and the bytes of the piece:
+
+```go
+package pieces
+
+type piece struct {
+  index int
+  buf   []byte
+}
+```
+
+Once the handshake is completed, the peer we are connecting to must send us a **bitfield**. The definition of a bitfield was 
+originally quite confusing. While it was clear that it represents the pieces present on a peer, it doesn't specify who should be
+the one emitting the initial bitfield or how it interacts with the algorithm. Turns out, the bitfield is used to represent what
+pieces a peer has. This means that in order to understand what pieces I can request from the peer, the client must keep track
+of what pieces the peer has offered. This will represent which pieces we can request from the peer. BUT it is also important to 
+know that the peer might not advertise all pieces at once. As such, it can also use `HAVE` messages to inform the client that new
+pieces are available.
+
 ## References
 
 ### BitTorrent specification
@@ -106,14 +162,14 @@ interested and the peer remains unchoked.
 
 ## TODO 
 
-- [ ] Set the valid parsing of the bencoding to use defers to catch the appropriate panics
-- [ ] Add data validation for bencoding decoding
+- [X] ~~Set the valid parsing of the bencoding to use defers to catch the appropriate panics~~
+- [X] Add data validation for bencoding decoding
 - [X] Add encoding to bencoding format
 - [ ] Update test suite and any other location where "parse" is used instead of decode
 - [ ] Retry downloading if the original torrent failed
 - [ ] Support web seeding
 - [ ] Set up event bus system for when adding CLI 
 - [ ] Add proper logging and error handling to allow for dynamic system
-- [ ] Clean up bencoding code (e.g. place the counter variable in the for loop)
-- [ ] Flatten out the folder structure to allow the torrent related files to be split out respectively
+- [X] Clean up bencoding code (e.g. place the counter variable in the for loop)
+- [X] Flatten out the folder structure to allow the torrent related files to be split out respectively
 - [ ] Use `select{}` with `time.After` to toggle a retry mechanism for server retries

@@ -1,6 +1,7 @@
 package message
 
 import (
+  "fmt"
   . "github.com/woojiahao/torrent.go/internal/utility"
 )
 
@@ -64,8 +65,19 @@ func (m *Message) Serialize() []byte {
   return buf
 }
 
+func New(id MessageID, payload ...byte) *Message {
+  return &Message{MessageID: id, Payload: payload}
+}
+
 func Deserialize(b []byte) *Message {
-  lengthPrefix, messageID := FromBigEndian(b[:4]), MessageID(int(b[4]))
+  lengthPrefix := FromBigEndian(b[:4])
+
+  // If keep alive
+  if lengthPrefix == 0 {
+    return nil
+  }
+
+  messageID := MessageID(int(b[4]))
 
   var payloadSize int
   if messageID == PieceID || messageID == BitfieldID {
@@ -84,4 +96,51 @@ func Deserialize(b []byte) *Message {
     messageID,
     payload,
   }
+}
+
+// Reads a PIECE message payload into the buffer
+// Copies the payload to the buffer
+func (m *Message) ParseBlock(index int, buf []byte) (int, error) {
+  if m.MessageID != PieceID {
+    return 0, fmt.Errorf("message is not of type PIECE")
+  }
+
+  payload := m.Payload
+
+  if len(payload) < 8 {
+    return 0, fmt.Errorf("payload is an invalid length")
+  }
+
+  blockIndex, begin, block := FromBigEndian(payload[:4]), FromBigEndian(payload[4:8]), payload[8:]
+
+  if blockIndex != index {
+    return 0, fmt.Errorf("expected index %d, received %d instead", index, blockIndex)
+  }
+
+  // The begin either points to the end of the buffer or further
+  if begin >= len(buf) {
+    return 0, fmt.Errorf("block offset cannot be greater than or equal to the piece buffer size")
+  }
+
+  // If the offset + payload exceeds the piece buffer's size
+  if begin+len(block) > len(buf) {
+    return 0, fmt.Errorf("payload too large for offset %d with piece buffer length of %d", begin, len(buf))
+  }
+
+  copy(buf[begin:], buf)
+  return len(block), nil
+}
+
+func (m *Message) ParseHave() (int, error) {
+  if m.MessageID != HaveID {
+    return 0, fmt.Errorf("message is not of type HAVE")
+  }
+
+  if len(m.Payload) > 4 {
+    return 0, fmt.Errorf("HAVE messages should have payloads of length 4")
+  }
+
+  index := FromBigEndian(m.Payload)
+
+  return index, nil
 }

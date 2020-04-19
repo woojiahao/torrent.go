@@ -1,8 +1,8 @@
-package torrent
+package torrent_file
 
 // Single file torrent structures
 type (
-  singleFileTorrent struct {
+  singleFileTorrentFile struct {
     announce string
     info     singleFileInfo
   }
@@ -15,18 +15,18 @@ type (
   }
 )
 
-func (t singleFileTorrent) GetAnnounce() string {
+func (t singleFileTorrentFile) GetAnnounce() string {
   return t.announce
 }
 
-func (t singleFileTorrent) GetLength() int {
+func (t singleFileTorrentFile) GetLength() int {
   return t.info.length
 }
 
-func (t singleFileTorrent) GetPieces() Pieces {
+func (t singleFileTorrentFile) GetPieces() Pieces {
   return t.info.Pieces
 }
 
-func (t singleFileTorrent) GetPieceLength() int {
+func (t singleFileTorrentFile) GetPieceLength() int {
   return t.info.pieceLength
 }

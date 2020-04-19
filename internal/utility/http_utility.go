@@ -9,7 +9,7 @@ type QueryParameters map[string]string
 func GET(URL string, parameters *QueryParameters) *Response {
   client := Client{}
   req, err := NewRequest("GET", URL, nil)
-  LogCheck(err)
+  Check(err)
 
   q := req.URL.Query()
   for key, value := range *parameters {
@@ -19,7 +19,7 @@ func GET(URL string, parameters *QueryParameters) *Response {
   req.URL.RawQuery = q.Encode()
 
   resp, err := client.Do(req)
-  LogCheck(err)
+  Check(err)
 
   return resp
 }
