@@ -16,7 +16,7 @@ func bencodingTest() {
 }
 
 func torrentDownload(filename string) {
-  torrent.Download(fmt.Sprintf("./assets/test-torrents/%s.torrent", filename))
+  torrent_file.Download(fmt.Sprintf("./assets/test-torrents/%s.torrent", filename))
 }
 
 func main() {

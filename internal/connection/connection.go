@@ -2,7 +2,6 @@ package connection
 
 import (
   "errors"
-  "github.com/woojiahao/torrent.go/internal/message"
   "io/ioutil"
   "net"
   "time"
@@ -31,12 +30,7 @@ func (c *Connection) Send(data []byte) error {
 }
 
 // Read from a TCP connection
-func (c *Connection) Receive() (*message.Message, error) {
-  m, err := ioutil.ReadAll(c.Conn)
-  if err != nil {
-    return nil, err
-  }
-
-  msg := message.Deserialize(m)
-  return msg, nil
+func (c *Connection) Receive() ([]byte, error) {
+  buf, err := ioutil.ReadAll(c.Conn)
+  return buf, err
 }

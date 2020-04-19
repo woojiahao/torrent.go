@@ -2,11 +2,10 @@ package torrent_file
 
 import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
-  "github.com/woojiahao/torrent.go/internal/client"
+  "github.com/woojiahao/torrent.go/internal/p2p"
   "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
-  "log"
   "os"
   "path/filepath"
 )
@@ -77,25 +76,23 @@ func Download(torrentFilename string) {
 
   torrentMetadata := ToDict(Decode(fileContents))
 
-  torrent, _ := parseTorrentFile(torrentMetadata)
+  torrentFile, _ := parseTorrentFile(torrentMetadata)
 
   peers, infoHash, peerID := tracker.RequestTracker(
-    torrent.GetAnnounce(),
+    torrentFile.GetAnnounce(),
     torrentMetadata[info].Encode(),
-    torrent.GetLength(),
+    torrentFile.GetLength(),
   )
 
-  // TODO Downloading should return a byte buffer
-  connectPeers(peers, infoHash, peerID)
-}
-
-func connectPeers(peers []tracker.Peer, infoHash, peerID string) {
-  for _, peer := range peers {
-    c, err := client.New(peer, infoHash, peerID)
-    if err != nil {
-      log.Println(err.Error())
-      continue
-    }
+  torrent := p2p.Torrent{
+    Peers:       peers,
+    InfoHash:    infoHash,
+    PeerID:      peerID,
+    Pieces:      torrentFile.GetPieces(),
+    PieceLength: torrentFile.GetPieceLength(),
+    Length:      torrentFile.GetLength(),
   }
+
+  torrent.Download()
 }
 

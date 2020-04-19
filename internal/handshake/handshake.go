@@ -66,7 +66,7 @@ func Request(conn *Connection, h *Handshake) error {
     log.Fatalf("error occured %s", err.Error())
   }
 
-  buf, err := conn.Receive(h.pstrlen + 49)
+  buf, err := conn.Receive()
   if err != nil {
     return err
   }

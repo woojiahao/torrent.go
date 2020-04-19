@@ -8,18 +8,34 @@ import (
   "github.com/woojiahao/torrent.go/internal/handshake"
   "github.com/woojiahao/torrent.go/internal/message"
   . "github.com/woojiahao/torrent.go/internal/tracker"
+  . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
 )
 
 // Client connection to a peer
+// Choked refers to whether the peer is choked
 type Client struct {
   Conn *Connection
   Peer
-  Choked     bool
-  Interested bool
+  Choked bool
   Bitfield
   InfoHash string
   PeerID   string
+}
+
+func receiveBitfield(conn *Connection) (Bitfield, error) {
+  buf, err := conn.Receive()
+  if err != nil {
+    return nil, err
+  }
+
+  m := message.Deserialize(buf)
+
+  if m.MessageID != message.BitfieldID {
+    return nil, errors.New("invalid message type, peer must provide bitfield to provide client with available pieces")
+  }
+
+  return m.Payload, nil
 }
 
 // Creates a new client connection
@@ -51,22 +67,36 @@ func New(peer Peer, infoHash, peerID string) (*Client, error) {
     conn,
     peer,
     true,
-    false,
     bitfield,
     infoHash,
     peerID,
   }, nil
 }
 
-func receiveBitfield(conn *Connection) (Bitfield, error) {
-  m, err := conn.Receive()
-  if err != nil {
-    return nil, err
-  }
+func (c *Client) SendUnchoke() error {
+  unchoke := message.New(message.UnchokeID)
+  err := c.Conn.Send(unchoke.Serialize())
+  return err
+}
 
-  if m.MessageID != message.BitfieldID {
-    return nil, errors.New("invalid message type, peer must provide bitfield to provide client with available pieces")
-  }
+func (c *Client) SendInterested() error {
+  interested := message.New(message.InterestedID)
+  err := c.Conn.Send(interested.Serialize())
+  return err
+}
 
-  return m.Payload, nil
+func (c *Client) SendRequest(index, begin, length int) error {
+  payload := make([]byte, 0, 12)
+  payload = append(payload, ToBigEndian(index, 4)...)
+  payload = append(payload, ToBigEndian(begin, 4)...)
+  payload = append(payload, ToBigEndian(length, 4)...)
+  request := message.New(message.RequestID, payload...)
+  err := c.Conn.Send(request.Serialize())
+  return err
+}
+
+func (c *Client) SendHave(index int) error {
+  have := message.New(message.HaveID, ToBigEndian(index, 4)...)
+  err := c.Conn.Send(have.Serialize())
+  return err
 }
