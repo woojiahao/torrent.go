@@ -1,7 +1,8 @@
-package torrent_file
+package torrent
 
 import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
+  . "github.com/woojiahao/torrent.go/internal/piece"
   "strings"
 )
 
@@ -24,6 +25,10 @@ type (
     paths  []string
   }
 )
+
+func (t multiFileTorrentFile) GetName() string {
+  return t.info.name
+}
 
 func (t multiFileTorrentFile) GetAnnounce() string {
   return t.announce

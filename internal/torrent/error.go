@@ -1,4 +1,4 @@
-package torrent_file
+package torrent
 
 import "fmt"
 

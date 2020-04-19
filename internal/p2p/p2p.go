@@ -5,7 +5,7 @@ import (
   "fmt"
   "github.com/woojiahao/torrent.go/internal/client"
   "github.com/woojiahao/torrent.go/internal/message"
-  "github.com/woojiahao/torrent.go/internal/torrent_file"
+  "github.com/woojiahao/torrent.go/internal/piece"
   "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
@@ -23,7 +23,7 @@ type Torrent struct {
   Peers       []tracker.Peer
   InfoHash    string
   PeerID      string
-  Pieces      torrent_file.Pieces
+  Pieces      piece.Pieces
   PieceLength int
   Length      int
 }
@@ -59,17 +59,15 @@ type pieceProgress struct {
 }
 
 func (p *pieceProgress) read() error {
-  buf, err := p.client.Conn.Receive()
+  msg, err := message.Read(p.client.Conn)
   if err != nil {
     return err
   }
 
   // If keep alive
-  if buf == nil {
+  if msg == nil {
     return nil
   }
-
-  msg := message.Deserialize(buf)
 
   switch msg.MessageID {
   case message.ChokeID:
@@ -105,6 +103,7 @@ func (p *pieceProgress) read() error {
 // Download a single piece as mandated by a pieceWork
 // Pieces are downloaded sequentially
 func downloadPiece(c *client.Client, work *pieceWork) ([]byte, error) {
+  log.Print("trying to download piece ", work.index)
   // While downloading the file, we want to keep track of the progress of downloading each block
   // of the piece
   progress := pieceProgress{
@@ -168,6 +167,7 @@ func (pw *pieceWork) checkIntegrity(piece []byte) error {
 }
 
 func (t *Torrent) startPeerDownload(peer tracker.Peer, workQueue chan *pieceWork, results chan *pieceResult) {
+  log.Print("starting peer download for ", peer.Address())
   c, err := client.New(peer, t.InfoHash, t.PeerID)
   if err != nil {
     log.Println(err.Error())
@@ -193,7 +193,7 @@ func (t *Torrent) startPeerDownload(peer tracker.Peer, workQueue chan *pieceWork
 
     buf, err := downloadPiece(c, work)
     if err != nil {
-      log.Print("failed to download piece", err.Error())
+      log.Print("failed to download piece ", err.Error())
       workQueue <- work
       continue
     }
@@ -247,7 +247,7 @@ func (t *Torrent) Download() []byte {
 
   // Begin downloading the pieces
   for _, peer := range t.Peers {
-    go t.startPeerDownload(peer, workQueue, results)
+    t.startPeerDownload(peer, workQueue, results)
   }
 
   // As we begin receiving pieces, we can start to add them to a larger buffer

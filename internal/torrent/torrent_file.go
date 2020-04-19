@@ -1,10 +1,13 @@
-package torrent_file
+package torrent
+
+import "github.com/woojiahao/torrent.go/internal/piece"
 
 type (
   TorrentFile interface {
+    GetName() string
     GetAnnounce() string
     GetLength() int
-    GetPieces() Pieces
+    GetPieces() piece.Pieces
     GetPieceLength() int
   }
 )

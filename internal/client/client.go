@@ -24,18 +24,16 @@ type Client struct {
 }
 
 func receiveBitfield(conn *Connection) (Bitfield, error) {
-  buf, err := conn.Receive()
+  msg, err := message.Read(conn)
   if err != nil {
     return nil, err
   }
 
-  m := message.Deserialize(buf)
-
-  if m.MessageID != message.BitfieldID {
+  if msg.MessageID != message.BitfieldID {
     return nil, errors.New("invalid message type, peer must provide bitfield to provide client with available pieces")
   }
 
-  return m.Payload, nil
+  return msg.Payload, nil
 }
 
 // Creates a new client connection

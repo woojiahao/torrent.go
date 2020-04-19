@@ -1,11 +1,13 @@
-package torrent_file
+package torrent
 
 import (
   . "github.com/woojiahao/torrent.go/internal/bencoding"
   "github.com/woojiahao/torrent.go/internal/p2p"
+  . "github.com/woojiahao/torrent.go/internal/piece"
   "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io/ioutil"
+  "log"
   "os"
   "path/filepath"
 )
@@ -37,7 +39,7 @@ func parseTorrentFile(torrentMetadata TDict) (TorrentFile, bool) {
 
   name, pieceLength, pieces := ToString(info[name]).Value(),
     ToInt(info[pieceLength]).Value(),
-    createPieces(ToString(info[pieces]).Value())
+    CreatePieces(ToString(info[pieces]).Value())
 
   var torrent TorrentFile
 
@@ -76,7 +78,7 @@ func Download(torrentFilename string) {
 
   torrentMetadata := ToDict(Decode(fileContents))
 
-  torrentFile, _ := parseTorrentFile(torrentMetadata)
+  torrentFile, isSingle := parseTorrentFile(torrentMetadata)
 
   peers, infoHash, peerID := tracker.RequestTracker(
     torrentFile.GetAnnounce(),
@@ -93,6 +95,14 @@ func Download(torrentFilename string) {
     Length:      torrentFile.GetLength(),
   }
 
-  torrent.Download()
+  buf := torrent.Download()
+
+  if isSingle {
+    // If it is a single file, create the file and then write the buffer to i
+    err := ioutil.WriteFile(torrentFile.GetName(), buf, 0644)
+    if err != nil {
+      log.Fatalf("failed to download file to %s due to reason %v", torrentFile.GetName(), err)
+    }
+  }
 }
 

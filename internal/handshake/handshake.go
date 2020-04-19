@@ -61,14 +61,19 @@ func New(infoHash, peerID string) *Handshake {
 }
 
 func Request(conn *Connection, h *Handshake) error {
+  log.Print("requesting handshake")
   err := conn.Send(h.serialize())
   if err != nil {
     log.Fatalf("error occured %s", err.Error())
   }
 
-  buf, err := conn.Receive()
+  buf, err := conn.Receive(h.pstrlen+49)
   if err != nil {
     return err
+  }
+
+  if len(buf) == 0 {
+    return fmt.Errorf("empty buffer received")
   }
 
   response := deserialize(buf)

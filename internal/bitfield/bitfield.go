@@ -11,7 +11,7 @@ type Bitfield []byte
 func (b Bitfield) HasPiece(pieceIndex int) bool {
   byteIndex := pieceIndex / 8
   offset := pieceIndex % 8
-  if len(b)-1 < byteIndex {
+  if byteIndex < 0 || len(b)-1 < byteIndex {
     return false
   }
   return b[byteIndex]>>(7-offset)&1 != 0
@@ -21,7 +21,7 @@ func (b Bitfield) HasPiece(pieceIndex int) bool {
 func (b Bitfield) SetPiece(pieceIndex int) {
   byteIndex := pieceIndex % 8
   offset := pieceIndex / 8
-  if len(b)-1 < byteIndex {
+  if byteIndex < 0 || len(b)-1 < byteIndex {
     return
   }
   b[byteIndex] |= 1 << (7 - offset)

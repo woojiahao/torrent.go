@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-  "github.com/woojiahao/torrent.go/internal/torrent_file"
+  "github.com/woojiahao/torrent.go/internal/torrent"
 )
 
 func bencodingTest() {
@@ -16,13 +16,13 @@ func bencodingTest() {
 }
 
 func torrentDownload(filename string) {
-  torrent_file.Download(fmt.Sprintf("./assets/test-torrents/%s.torrent", filename))
+  torrent.Download(fmt.Sprintf("./assets/test-torrents/%s.torrent", filename))
 }
 
 func main() {
   //torrentDownload("alice-in-wonderland")
   //torrentDownload("um-iso.iso")
   //torrentDownload("aesop-fables")
-  torrentDownload("deb.iso")
-  //torrentDownload("arch")
+  //torrentDownload("deb.iso")
+  torrentDownload("arch")
 }

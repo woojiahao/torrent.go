@@ -2,7 +2,9 @@ package message
 
 import (
   "fmt"
+  "github.com/woojiahao/torrent.go/internal/connection"
   . "github.com/woojiahao/torrent.go/internal/utility"
+  "io"
 )
 
 // Piece and Bitfield do not have a default length prefixes and payload sizes
@@ -96,6 +98,30 @@ func Deserialize(b []byte) *Message {
     messageID,
     payload,
   }
+}
+
+func Read(c *connection.Connection) (*Message, error) {
+  lengthBuf := make([]byte, 4)
+  _, err := io.ReadFull(c.Conn, lengthBuf)
+  if err != nil {
+    return nil, err
+  }
+  length := FromBigEndian(lengthBuf)
+
+  if length == 0 {
+    return nil, nil
+  }
+
+  buf, err := c.Receive(length)
+  if err != nil {
+    return nil, err
+  }
+
+  fullMessage := make([]byte, length+4)
+  copy(fullMessage[:4], lengthBuf)
+  copy(fullMessage[4:], buf)
+
+  return Deserialize(fullMessage), nil
 }
 
 // Reads a PIECE message payload into the buffer

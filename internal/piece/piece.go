@@ -1,4 +1,4 @@
-package torrent_file
+package piece
 
 import (
   "errors"
@@ -8,10 +8,11 @@ import (
 
 type Pieces [][20]byte
 
+const pieceSize = 20
+
 // Generate the pieces of a torrent file
-func createPieces(piecesStr string) Pieces {
-  const pieceSize = 20
-  piecesCount := len(piecesStr)/pieceSize
+func CreatePieces(piecesStr string) Pieces {
+  piecesCount := len(piecesStr) / pieceSize
   pieces := make([][pieceSize]byte, piecesCount)
 
   if len(piecesStr)%pieceSize != 0 {

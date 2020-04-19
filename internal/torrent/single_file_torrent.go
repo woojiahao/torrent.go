@@ -1,4 +1,6 @@
-package torrent_file
+package torrent
+
+import . "github.com/woojiahao/torrent.go/internal/piece"
 
 // Single file torrent structures
 type (
@@ -14,6 +16,10 @@ type (
     Pieces
   }
 )
+
+func (t singleFileTorrentFile) GetName() string {
+  return t.info.name
+}
 
 func (t singleFileTorrentFile) GetAnnounce() string {
   return t.announce

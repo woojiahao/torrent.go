@@ -2,7 +2,7 @@ package connection
 
 import (
   "errors"
-  "io/ioutil"
+  "fmt"
   "net"
   "time"
 )
@@ -21,7 +21,9 @@ func TCP(address string, timeout int) (*Connection, error) {
 
 // Write to a TCP connection
 func (c *Connection) Send(data []byte) error {
+  fmt.Println(len(data))
   n, err := c.Conn.Write(data)
+  fmt.Println(n)
   if n != len(data) {
     return errors.New("unsuccessful; bytes written not equal to the bytes sent")
   }
@@ -30,7 +32,8 @@ func (c *Connection) Send(data []byte) error {
 }
 
 // Read from a TCP connection
-func (c *Connection) Receive() ([]byte, error) {
-  buf, err := ioutil.ReadAll(c.Conn)
+func (c *Connection) Receive(size int) ([]byte, error) {
+  buf := make([]byte, size)
+  _, err := c.Conn.Read(buf)
   return buf, err
 }
