@@ -1,8 +1,6 @@
 package connection
 
 import (
-  "errors"
-  "fmt"
   "net"
   "time"
 )
@@ -21,12 +19,7 @@ func TCP(address string, timeout int) (*Connection, error) {
 
 // Write to a TCP connection
 func (c *Connection) Send(data []byte) error {
-  n, err := c.Conn.Write(data)
-  fmt.Printf("sent %d bytes, write returned %d bytes\n", len(data), n)
-  if n != len(data) {
-    return errors.New("unsuccessful; bytes written not equal to the bytes sent")
-  }
-
+  _, err := c.Conn.Write(data)
   return err
 }
 

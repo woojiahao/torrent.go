@@ -1,10 +1,12 @@
 package message
 
 import (
+  "bufio"
   "fmt"
   "github.com/woojiahao/torrent.go/internal/connection"
   . "github.com/woojiahao/torrent.go/internal/utility"
   "io"
+  "log"
 )
 
 // Piece and Bitfield do not have a default length prefixes and payload sizes
@@ -101,28 +103,35 @@ func Deserialize(b []byte) *Message {
 }
 
 func Read(c *connection.Connection) (*Message, error) {
+  reader := bufio.NewReader(c.Conn)
   lengthBuf := make([]byte, 4)
-  _, err := io.ReadFull(c.Conn, lengthBuf)
+  _, err := io.ReadFull(reader, lengthBuf)
   if err != nil {
     return nil, err
   }
+
   length := FromBigEndian(lengthBuf)
+
+  log.Printf("lengthBuf is %v and length is %d\n", lengthBuf, length)
 
   if length == 0 {
     return nil, nil
   }
 
-  buf, err := c.Receive(length)
+  buf := make([]byte, length)
+  _, err = io.ReadFull(reader, buf)
   if err != nil {
     return nil, err
   }
-
-  fmt.Printf("buffer received is %d\n", buf)
 
   fullMessage := make([]byte, length+4)
   copy(fullMessage[:4], lengthBuf)
   copy(fullMessage[4:5], []byte{buf[0]})
   copy(fullMessage[5:], buf[1:])
+
+  m := Deserialize(fullMessage)
+
+  fmt.Printf("deserialized messasge is %v\n", m)
 
   return Deserialize(fullMessage), nil
 }
@@ -172,4 +181,8 @@ func (m *Message) ParseHave() (int, error) {
   index := FromBigEndian(m.Payload)
 
   return index, nil
+}
+
+func (m Message) String() string {
+  return fmt.Sprintf("message has length of %d, id of %d", m.LengthPrefix, m.MessageID)
 }

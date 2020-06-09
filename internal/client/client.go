@@ -61,6 +61,8 @@ func New(peer Peer, infoHash, peerID string) (*Client, error) {
     return nil, err
   }
 
+  log.Println("bitfield received")
+
   return &Client{
     conn,
     peer,
@@ -88,15 +90,17 @@ func (c *Client) SendRequest(index, begin, length int) error {
   payload = append(payload, ToBigEndian(index, 4)...)
   payload = append(payload, ToBigEndian(begin, 4)...)
   payload = append(payload, ToBigEndian(length, 4)...)
-  fmt.Printf("request to download file %v\n", payload)
-  request := message.New(message.RequestID, payload...)
-  fmt.Printf("request message is %v\n", request)
-  err := c.Conn.Send(request.Serialize())
+  log.Printf("request to download file %v\n", payload)
+  request := message.New(message.RequestID, payload...).Serialize()
+  log.Printf("request message is %v\n", request)
+  err := c.Conn.Send(request)
   return err
 }
 
 func (c *Client) SendHave(index int) error {
   have := message.New(message.HaveID, ToBigEndian(index, 4)...)
+  t := have.Serialize()
+  fmt.Printf("serialized have is %v\n", t)
   err := c.Conn.Send(have.Serialize())
   return err
 }

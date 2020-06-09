@@ -1,13 +1,9 @@
 package p2p
 
 import (
-  "bytes"
-  "fmt"
   "github.com/woojiahao/torrent.go/internal/client"
-  "github.com/woojiahao/torrent.go/internal/message"
   "github.com/woojiahao/torrent.go/internal/piece"
   "github.com/woojiahao/torrent.go/internal/tracker"
-  . "github.com/woojiahao/torrent.go/internal/utility"
   "log"
   "runtime"
   "time"
@@ -17,7 +13,7 @@ const maxBlockSize = 16384
 
 // Backlog is used to ensure that we do not keep making requests for block while the existing block
 // might already be processing
-const maxBacklog = 1
+const maxBacklog = 3
 
 type Torrent struct {
   Peers       []tracker.Peer
@@ -28,78 +24,9 @@ type Torrent struct {
   Length      int
 }
 
-// For a piece to be downloaded, we need to know its position in the file,
-// its hash, and the length of this piece
-type pieceWork struct {
-  index  int
-  hash   [20]byte
-  length int
-}
-
 type pieceResult struct {
   index int
   buf   []byte
-}
-
-// The progress we make while downloading a single piece
-// index -> index of the piece
-// client -> connection to the peer
-// buf -> downloaded blocks of the piece
-// downloaded -> confirmed amount of pieces downloaded
-// requested -> pieces that we have already requested for; we split this up as we may have requested for something
-// but did not manage to download it. requested also acts as the offset in the block
-// backlog -> ??
-type pieceProgress struct {
-  index      int
-  client     *client.Client
-  buf        []byte
-  downloaded int
-  requested  int
-  backlog    int
-}
-
-func (p *pieceProgress) read() error {
-  msg, err := message.Read(p.client.Conn)
-  if err != nil {
-    return err
-  }
-
-  // If keep alive
-  if msg == nil {
-    return nil
-  }
-
-  log.Printf("message id is %d\n", msg.MessageID)
-
-  switch msg.MessageID {
-  case message.ChokeID:
-    // If the peer informs us that it is choked, we will update our connection to be choked
-    // Doing this will mean that our download loop will continue pinging the peer until it is unchoked
-    p.client.Choked = true
-  case message.UnchokeID:
-    // If the peer informs us that it is unchoked, we will update our connection to be unchoked
-    // Doing this allows our download loop to resume requesting for pieces
-    p.client.Choked = false
-  case message.HaveID:
-    // If the peer suddenly downloads a new piece, it may publish that there is a new piece so we need to
-    // update our connection's bitfield
-    index, err := msg.ParseHave()
-    if err != nil {
-      return err
-    }
-    p.client.Bitfield.SetPiece(index)
-  case message.PieceID:
-    // If the peer is providing a block, we want to download the block into our buffer, and then update
-    // out downloaded to move forward by the given length
-    n, err := msg.ParseBlock(p.index, p.buf)
-    if err != nil {
-      return err
-    }
-    p.downloaded += n
-    p.backlog--
-  }
-
-  return nil
 }
 
 // Download a single piece as mandated by a pieceWork
@@ -123,31 +50,46 @@ func downloadPiece(c *client.Client, work *pieceWork) ([]byte, error) {
 
   // As long as all the pieces are not confirmed to have been downloaded, make a download request
   for progress.downloaded < work.length {
-    // If the peer isn't choked at the moment, request for a new block
+    //If the peer isn't choked at the moment, request for a new block
     if !progress.client.Choked {
-      for progress.backlog < maxBacklog && progress.requested < work.length {
-        blockSize := maxBlockSize
+     blockSize := maxBlockSize
 
-        // For the last block, it may be shorter than normal as it could just be the lingering
-        // bytes within the buffer
-        if blockSize > (work.length - progress.requested) {
-          blockSize = work.length - progress.requested
-        }
+     if blockSize > (work.length - progress.requested) {
+       blockSize = work.length - progress.requested
+     }
 
-        // Sending the request requires three components: the piece's index, the offset of the block
-        // within the piece, and the size of the block we are requesting for
-        err := c.SendRequest(work.index, progress.requested, blockSize)
-        if err != nil {
-          return nil, err
-        }
+     err := c.SendRequest(work.index, progress.requested, blockSize)
+     if err != nil {
+       return nil, err
+     }
 
-        // Add to the backlog to indicate that a block is already being processed
-        progress.backlog++
-
-        // Shift the offset by the blockSize as the future blocks will be after this block
-        progress.requested += blockSize
-      }
+     progress.requested += blockSize
     }
+
+    //if !progress.client.Choked {
+    // for progress.backlog < maxBacklog && progress.requested < work.length {
+    //   blockSize := maxBlockSize
+    //
+    //   // For the last block, it may be shorter than normal as it could just be the lingering
+    //   // bytes within the buffer
+    //   if blockSize > (work.length - progress.requested) {
+    //     blockSize = work.length - progress.requested
+    //   }
+    //
+    //   // Sending the request requires three components: the piece's index, the offset of the block
+    //   // within the piece, and the size of the block we are requesting for
+    //   err := c.SendRequest(work.index, progress.requested, blockSize)
+    //   if err != nil {
+    //     return nil, err
+    //   }
+    //
+    //   // Add to the backlog to indicate that a block is already being processed
+    //   progress.backlog++
+    //
+    //   // Shift the offset by the blockSize as the future blocks will be after this block
+    //   progress.requested += blockSize
+    // }
+    //}
 
     // In either case, we want to read from the peer and see what kind of message it is emitting
     err := progress.read()
@@ -157,15 +99,6 @@ func downloadPiece(c *client.Client, work *pieceWork) ([]byte, error) {
   }
 
   return progress.buf, nil
-}
-
-// Verifies that a downloaded piece matches the advertised piece hash
-func (pw *pieceWork) checkIntegrity(piece []byte) error {
-  pieceHash := GenerateSHA1Hash(string(piece)).Sum(nil)
-  if bytes.Equal(pw.hash[:], pieceHash) {
-    return fmt.Errorf("SHA1 hash of downloaded piece is not the same as the original piece SHA1 hash")
-  }
-  return nil
 }
 
 func (t *Torrent) startPeerDownload(peer tracker.Peer, workQueue chan *pieceWork, results chan *pieceResult) {
@@ -181,11 +114,11 @@ func (t *Torrent) startPeerDownload(peer tracker.Peer, workQueue chan *pieceWork
     }
   }()
 
-  _ = c.SendUnchoke()
   _ = c.SendInterested()
 
   // Every client connection will attempt to take a piece of work to perform
   for work := range workQueue {
+    log.Printf("downloading piece %d\n", work.index)
     // If the connected peer does not contain the piece, re-add the piece of work
     // and move on to the next piece of work
     if !c.Bitfield.HasPiece(work.index) {
@@ -246,6 +179,8 @@ func (t *Torrent) Download() []byte {
     length := t.calculatePieceSize(i)
     workQueue <- &pieceWork{i, hash, length}
   }
+
+  log.Printf("work queue is %v\n", workQueue)
 
   // Begin downloading the pieces
   for _, peer := range t.Peers {
