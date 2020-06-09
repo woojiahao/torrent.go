@@ -149,6 +149,7 @@ pieces are available.
 - [Implementing BitTorrent using AsyncIO in Python](https://youtu.be/Pe3b9bdRtiE)
 - [Torrent files](https://en.wikipedia.org/wiki/Torrent_file)
 - [Specification](https://wiki.theory.org/index.php/BitTorrentSpecification)
+- [How to write a BitTorrent client](http://www.kristenwidman.com/blog/71/how-to-write-a-bittorrent-client-part-2/)
 
 ### Bencoding format
 

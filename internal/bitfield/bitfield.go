@@ -1,5 +1,7 @@
 package bitfield
 
+import "fmt"
+
 // A bitfield is an array of bytes with each byte
 // Each bit in the bitfield corresponds to a piece index
 type Bitfield []byte
@@ -19,8 +21,11 @@ func (b Bitfield) HasPiece(pieceIndex int) bool {
 
 // Sets a specified piece index to 1
 func (b Bitfield) SetPiece(pieceIndex int) {
-  byteIndex := pieceIndex % 8
-  offset := pieceIndex / 8
+  fmt.Printf("piece index is %d\n", pieceIndex)
+  byteIndex := pieceIndex / 8
+  fmt.Printf("byte index is %d\n", byteIndex)
+  offset := pieceIndex % 8
+  fmt.Printf("offset is %d\n", offset)
   if byteIndex < 0 || len(b)-1 < byteIndex {
     return
   }
