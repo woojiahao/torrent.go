@@ -6,13 +6,13 @@ import (
 
 type QueryParameters map[string]string
 
-func GET(URL string, parameters QueryParameters) *Response {
+func GET(URL string, parameters *QueryParameters) *Response {
   client := Client{}
   req, err := NewRequest("GET", URL, nil)
   Check(err)
 
   q := req.URL.Query()
-  for key, value := range parameters {
+  for key, value := range *parameters {
     q.Add(key, value)
   }
 
@@ -23,3 +23,4 @@ func GET(URL string, parameters QueryParameters) *Response {
 
   return resp
 }
+

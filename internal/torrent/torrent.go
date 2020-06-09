@@ -1,167 +1,108 @@
 package torrent
 
 import (
-  "fmt"
   . "github.com/woojiahao/torrent.go/internal/bencoding"
+  "github.com/woojiahao/torrent.go/internal/p2p"
+  . "github.com/woojiahao/torrent.go/internal/piece"
+  "github.com/woojiahao/torrent.go/internal/tracker"
   . "github.com/woojiahao/torrent.go/internal/utility"
-  "strings"
+  "io/ioutil"
+  "log"
+  "os"
+  "path/filepath"
 )
 
-type (
-  pieces  [][20]byte
-  torrent interface {
-    getAnnounce() string
-    getLength() int
-  }
-)
+func validateTorrentFilename(filename string) {
+  file, err := os.Stat(filename)
 
-// Single file torrent structures
-type (
-  singleFileTorrent struct {
-    announce string
-    info     singleFileInfo
+  if os.IsNotExist(err) {
+    err = &fileError{filename, "does not exist"}
+  } else if file.IsDir() {
+    err = &fileError{filename, "points to a directory"}
+  } else if filepath.Ext(filename) != ".torrent" {
+    err = &fileError{filename, "is not a .torrent file"}
   }
 
-  singleFileInfo struct {
-    length      int
-    name        string
-    pieceLength int
-    pieces
-  }
-)
-
-func (t singleFileTorrent) getAnnounce() string {
-  return t.announce
+  Check(err)
 }
 
-func (t singleFileTorrent) getLength() int {
-  return t.info.length
-}
-
-// Multi file torrent structures
-type (
-  multiFileTorrent struct {
-    announce string
-    info     multiFileInfo
-  }
-
-  multiFileInfo struct {
-    files       []file
-    name        string
-    pieceLength int
-    pieces
-  }
-
-  file struct {
-    length int
-    paths  []string
-  }
-)
-
-func (t multiFileTorrent) getAnnounce() string {
-  return t.announce
-}
-
-func (t multiFileTorrent) getLength() int {
-  return 0
-}
-
-func (f file) path() string {
-  return strings.Join(f.paths, "/")
-}
-
-// Generate the pieces of a torrent file
-func createPieces(piecesStr string) pieces {
-  pieces := make([][20]byte, 0)
-
-  for i := 0; i < len(piecesStr); i += 20 {
-    byteSlice := []byte(piecesStr[i : i+20])
-    var byteChunk [20]byte
-    copy(byteChunk[:], byteSlice[:20])
-    pieces = append(pieces, byteChunk)
-  }
-
-  return pieces
-}
-
-// Create the files list for multi file torrents
-func parseFiles(filesLst TList) []file {
-  files := make([]file, 0)
-
-  for _, f := range filesLst {
-    data := ToDict(f)
-
-    pathsLst, paths := ToList(data["path"]), make([]string, 0)
-    for _, p := range pathsLst {
-      paths = append(paths, ToString(p).Value())
-    }
-
-    file := file{
-      length: ToInt(data["length"]).Value(),
-      paths:  paths,
-    }
-    files = append(files, file)
-  }
-
-  return files
+func readFileContents(filename string) string {
+  data, err := ioutil.ReadFile(filename)
+  Check(err)
+  return string(data)
 }
 
 // Parses a torrent file into either a single file torrent or multi file torrent
-func parseTorrentFile(torrentMetadata TDict) (torrent, bool) {
-  announce, info := ToString(torrentMetadata["announce"]).Value(),
-    ToDict(torrentMetadata["info"])
+func parseTorrentFile(torrentMetadata TDict) (TorrentFile, bool) {
+  announce, info := ToString(torrentMetadata[announce]).Value(),
+    ToDict(torrentMetadata[info])
+
+  name, pieceLength, pieces := ToString(info[name]).Value(),
+    ToInt(info[pieceLength]).Value(),
+    CreatePieces(ToString(info[pieces]).Value())
+
+  var torrent TorrentFile
 
   isSingle := info["files"] == nil
 
-  name, pieceLength, pieces := ToString(info["name"]).Value(),
-    ToInt(info["piece length"]).Value(),
-    createPieces(ToString(info["pieces"]).Value())
-
-  var torrent torrent
-
   if isSingle {
-    torrent = singleFileTorrent{
+    torrent = singleFileTorrentFile{
       announce,
       singleFileInfo{
-        length:      ToInt(info["length"]).Value(),
+        length:      ToInt(info[length]).Value(),
         name:        name,
         pieceLength: pieceLength,
-        pieces:      pieces,
+        Pieces:      pieces,
       },
     }
   } else {
-    torrent = multiFileTorrent{
+    torrent = multiFileTorrentFile{
       announce,
       multiFileInfo{
-        files:       parseFiles(ToList(info["files"])),
+        files:       parseFiles(ToList(info[files])),
         name:        name,
         pieceLength: pieceLength,
-        pieces:      pieces,
+        Pieces:      pieces,
       },
     }
   }
   return torrent, isSingle
 }
 
+// TODO Retry the download if the original returns a failure
 // Downloads a torrent from the given file path
 func Download(torrentFilename string) {
+  validateTorrentFilename(torrentFilename)
 
-  if NotExist(torrentFilename) {
-    panic("file does not exist")
-  } else if IsDir(torrentFilename) {
-    panic("filename points to a directory")
-  } else if !IsFileType(torrentFilename, "torrent") {
-    panic("given filename must be a torrent file")
-  }
-
-  fileContents := ReadFileContents(torrentFilename)
+  fileContents := readFileContents(torrentFilename)
 
   torrentMetadata := ToDict(Decode(fileContents))
 
-  torrent, _ := parseTorrentFile(torrentMetadata)
+  torrentFile, isSingle := parseTorrentFile(torrentMetadata)
 
-  info := torrentMetadata["info"].Encode()
+  peers, infoHash, peerID := tracker.RequestTracker(
+    torrentFile.GetAnnounce(),
+    torrentMetadata[info].Encode(),
+    torrentFile.GetLength(),
+  )
 
-  trackerResponse := requestTracker(torrent.getAnnounce(), info, torrent.getLength())
-  fmt.Println(trackerResponse)
+  torrent := p2p.Torrent{
+    Peers:       peers,
+    InfoHash:    infoHash,
+    PeerID:      peerID,
+    Pieces:      torrentFile.GetPieces(),
+    PieceLength: torrentFile.GetPieceLength(),
+    Length:      torrentFile.GetLength(),
+  }
+
+  buf := torrent.Download()
+
+  if isSingle {
+    // If it is a single file, create the file and then write the buffer to i
+    err := ioutil.WriteFile(torrentFile.GetName(), buf, 0644)
+    if err != nil {
+      log.Fatalf("failed to download file to %s due to reason %v", torrentFile.GetName(), err)
+    }
+  }
 }
+

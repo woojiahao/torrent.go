@@ -2,45 +2,17 @@ package utility
 
 import (
   "crypto/sha1"
+  "encoding/binary"
   "hash"
+  "log"
+  "math"
   "math/rand"
-  "strconv"
-  "unicode"
 )
 
-// Checks if an error is non-nil; if non-nil, panic with the error; else ignore
 func Check(err error) {
   if err != nil {
-    panic(err)
+    log.Fatal(err.Error())
   }
-}
-
-// Converts a string to an integer
-func StrToInt(in string) int {
-  val, err := strconv.Atoi(in)
-  Check(err)
-  return val
-}
-
-// Converts a string to a rune
-func StrToRune(in string) rune {
-  return []rune(in)[0]
-}
-
-// Check if a string is a digit
-func IsDigit(in string) bool {
-  return unicode.IsDigit(StrToRune(in))
-}
-
-// Check if a string is within the range of specified strings
-func IsStrInRange(in string, ch ...string) bool {
-  for _, c := range ch {
-    if c == in {
-      return true
-    }
-  }
-
-  return false
 }
 
 // Generates a random integer from min (inclusive) to max (exclusive)
@@ -62,8 +34,31 @@ func RandomChar() byte {
 }
 
 // Generate a SHA1 Hash for a given string input
+// The info_hash is the SHA1 hash representation of the bencoding info portion of the metadata
+// The SHA1 hash generated is 40 characters long for human reading, it is in fact a hex string
+// The tracker must receive the URL-encoded version of the hex string
 func GenerateSHA1Hash(input string) hash.Hash {
   h := sha1.New()
   h.Write([]byte(input))
   return h
+}
+
+func ToBigEndian(value, size int) []byte {
+  buf := make([]byte, size)
+  binary.BigEndian.PutUint32(buf, uint32(value))
+  return buf
+}
+
+func FromBigEndian(value []byte) int {
+  return int(binary.BigEndian.Uint32(value))
+}
+
+// Implementation of math.Pow for int
+func Pow(base, pow int) int {
+  return int(math.Pow(float64(base), float64(pow)))
+}
+
+// Implementation of math.Min for int
+func Min(a, b int) int {
+  return int(math.Min(float64(a), float64(b)))
 }
